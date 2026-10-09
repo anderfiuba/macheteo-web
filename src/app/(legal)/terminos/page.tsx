@@ -1,6 +1,6 @@
 import { LegalPage } from "@/components/legal/LegalPage";
 
-export const metadata = { title: "Términos y Condiciones · Macheteo" };
+export const metadata = { title: "Términos y Condiciones · Macheteo", alternates: { canonical: "/terminos" }, openGraph: { url: "/terminos" } };
 
 export default function Page() {
   return (

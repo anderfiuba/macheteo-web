@@ -162,7 +162,7 @@ export function ResumenProgress({ id }: { id: string }) {
           {errContenido && (
             <div className="rounded-lg border border-tachon/40 px-4 py-3 text-sm">
               {intentos > 0 ? (
-                <p className="text-tachon">ⓘ Tu apunte es muy largo o complejo para este largo. Probá con menos texto o elegí un largo mayor. Te quedan {intentos} intentos hoy.</p>
+                <p className="text-tachon">ⓘ Tu apunte es muy largo o complejo para este largo. Probá con menos texto o elegí un largo mayor. Te quedan {intentos} {intentos === 1 ? "intento" : "intentos"} hoy.</p>
               ) : (
                 <p className="text-tachon">ⓘ Llegaste al máximo de intentos fallidos de hoy. Mañana podés volver a probar.</p>
               )}
@@ -197,7 +197,7 @@ export function ResumenProgress({ id }: { id: string }) {
 
       {/* DO-03 / S18: mientras se arma, línea que abre la tarjeta "Bancá a Macheteo" (sheet/modal). Nunca bloquea. */}
       <div className="rounded-lg bg-celeste px-4 py-3">
-        <LineaDonar variante={r.estado === "listo" ? "listo" : "esperando"} />
+        {r.estado !== "error" && <LineaDonar variante={r.estado === "listo" ? "listo" : "esperando"} />}
       </div>
     </div>
   );

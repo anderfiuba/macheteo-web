@@ -1,6 +1,11 @@
 export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 export const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+/** URL canónica de producción (sin dominio propio todavía). Canonical, OpenGraph, sitemap y robots apuntan acá. */
+export const PRODUCTION_URL = "https://macheteo-web.vercel.app";
+/** URL del entorno actual (redirects de email/OAuth). Local: NEXT_PUBLIC_SITE_URL=http://localhost:3000 en .env.local. */
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || PRODUCTION_URL;
+/** Rutas públicas indexables (el resto requiere sesión o es transitorio). */
+export const RUTAS_PUBLICAS = ["/registro", "/ingresar", "/terminos", "/privacidad"] as const;
 export const API_MODE: "mock" | "supabase" =
   process.env.NEXT_PUBLIC_API_MODE === "supabase" ? "supabase" : "mock";
 

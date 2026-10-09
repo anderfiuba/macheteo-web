@@ -1,6 +1,6 @@
 import { LegalPage } from "@/components/legal/LegalPage";
 
-export const metadata = { title: "Política de Privacidad · Macheteo" };
+export const metadata = { title: "Política de Privacidad · Macheteo", alternates: { canonical: "/privacidad" }, openGraph: { url: "/privacidad" } };
 
 export default function Page() {
   return (
