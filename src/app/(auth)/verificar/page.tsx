@@ -11,13 +11,13 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
   return (
     <AuthCard
       titulo={vencido ? "El link venció" : "Revisá tu email"}
-      pie={<Link href="/ingresar" className="text-primary">Ir a entrar</Link>}
+      pie={<Link href="/ingresar" className="text-birome">Ir a entrar</Link>}
     >
       {vencido ? (
         <Aviso tipo="warning">El link de verificación venció o ya se usó. Pedí uno nuevo.</Aviso>
       ) : (
         <p className="mb-5 text-base">
-          Si el email es válido, te mandamos un link para verificar tu cuenta{email ? <> a <strong>{email}</strong></> : null}. Al verificarla te regalamos <strong>2 créditos</strong>: alcanza para un Machete.
+          Si el email es válido, te mandamos un link para verificar tu cuenta{email ? <> a <strong>{email}</strong></> : null}. Cuando la verifiques, ya podés armar tu primer machete. Es gratis.
         </p>
       )}
       <ResendEmail emailInicial={vencido ? undefined : email} />

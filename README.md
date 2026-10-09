@@ -9,6 +9,7 @@ npm install && npm run dev
 
 - `src/lib/api/` — interfaz `MacheteoApi` con `mockApi` (localStorage) y `supabaseApi` (RPC propuestas). Se elige con `NEXT_PUBLIC_API_MODE`.
 - `src/lib/supabase/` — clientes browser/server + refresco de sesión en `src/middleware.ts` (protege `/nuevo`, `/resumenes`, etc.).
-- Rutas (alineadas a flows.md): `/`, `/registro`, `/verificar`, `/ingresar`, `/recuperar`, `/recuperar/nueva`, `/auth/callback`, `/biblioteca` (home logueada), `/nuevo?paso=1..5`, `/resumenes/[id]`, `/creditos`, `/creditos/historial`, `/cuenta`, `/terminos`, `/privacidad`, `/arrepentimiento`.
-- Tokens de diseño: `src/app/globals.css` (de `/workspace/macheteo-design/design-tokens.md`); fuentes Inter + Kalam (`next/font`).
+- Rutas: `/` (→ `/nuevo`; landing más adelante), `/registro`, `/verificar`, `/ingresar`, `/recuperar`, `/recuperar/nueva`, `/auth/callback`, `/nuevo` (formulario en una pantalla + "Así va a salir"), `/resumenes/[id]`, `/biblioteca`, `/perfil`, `/terminos`, `/privacidad`.
+- Identidad "Birome" (design-tokens v1): `src/app/globals.css`; Young Serif + Instrument Sans (`next/font`). Donación estática por env vars `NEXT_PUBLIC_DONACION_*` (sin ellas: datos de EJEMPLO).
+- Mock N-19: incluí `#tope`, `#timeout` o `#falla` en los apuntes para simular errores.
 - Contrato con Backend: `docs/endpoints-backend.md`.

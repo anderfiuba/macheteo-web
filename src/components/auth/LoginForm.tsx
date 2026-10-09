@@ -48,7 +48,7 @@ export function LoginForm({ volver }: { volver: string }) {
         <Campo id="email" label="Email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errores.email} />
         <Campo id="password" label="Contraseña" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} error={errores.password} />
         <div className="-mt-2 mb-5 text-right">
-          <Link href="/recuperar" className="text-sm text-primary hover:underline">¿Te olvidaste la contraseña?</Link>
+          <Link href="/recuperar" className="text-sm text-birome hover:underline">¿Te olvidaste la contraseña?</Link>
         </div>
         <Boton type="submit" cargando={cargando}>{cargando ? "Entrando…" : "Entrar"}</Boton>
       </form>

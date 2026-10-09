@@ -1,88 +1,89 @@
 "use client";
 import { createClient } from "@/lib/supabase/client";
-import type { CostoExtension, CrearResumenResult, EstadoResumenDTO, MacheteoApi, Saldo } from "./types";
+import type { CrearResumenResult, ErrorCrear, EstadoResumenDTO, MacheteoApi, Perfil, UsoDiario } from "./types";
 
 /**
- * Implementación real contra Supabase. Los nombres de RPC/vistas son PROPUESTOS y
- * deben confirmarse con Backend (ver docs/endpoints-backend.md).
+ * Implementación real contra Supabase. Nombres de RPC/columnas PROPUESTOS; confirmar con Backend
+ * (ver docs/endpoints-backend.md).
  */
+type PerfilRow = { nombre: string | null; nombre_en_hojas: string | null; hoja_default: string | null; tinta_default: string | null; avisar_email: boolean | null };
+const aPerfil = (r: PerfilRow | null, email: string | null): Perfil => ({
+  nombre: r?.nombre ?? "",
+  email,
+  nombreEnHojas: r?.nombre_en_hojas ?? r?.nombre ?? "",
+  hojaDefault: (r?.hoja_default as Perfil["hojaDefault"]) ?? "rayado",
+  tintaDefault: (r?.tinta_default as Perfil["tintaDefault"]) ?? "azul",
+  avisarEmail: r?.avisar_email ?? true,
+});
+const COLS = "nombre,nombre_en_hojas,hoja_default,tinta_default,avisar_email";
+
 export const supabaseApi: MacheteoApi = {
-  async getSaldo() {
-    const { data, error } = await createClient().rpc("obtener_saldo");
+  async getUso() {
+    const { data, error } = await createClient().rpc("obtener_uso_diario");
     if (error) throw error;
-    const d = data as { saldo: number; reservados: number; por_vencer_cantidad: number | null; por_vencer_at: string | null; email_verificado: boolean };
+    const d = data as Record<string, unknown>;
     return {
-      saldo: d.saldo,
-      reservados: d.reservados ?? 0,
-      porVencer: d.por_vencer_cantidad ? { cantidad: d.por_vencer_cantidad, venceAt: d.por_vencer_at! } : null,
-      emailVerificado: d.email_verificado,
-    } satisfies Saldo;
+      machetesUsados: d.machetes_usados, machetesMax: d.machetes_max,
+      hojasUsadas: d.hojas_usadas, hojasMax: d.hojas_max,
+      enCurso: d.en_curso, enCursoMax: d.en_curso_max,
+      proximoCupoAt: d.proximo_cupo_at ?? null, limiteGlobal: Boolean(d.limite_global),
+      emailVerificado: Boolean(d.email_verificado),
+    } as UsoDiario;
   },
-  async getCostos() {
-    const { data, error } = await createClient().from("costos_extension").select("extension,max_creditos,min_creditos");
+  async getPerfil() {
+    const sb = createClient();
+    const { data: u } = await sb.auth.getUser();
+    const { data } = await sb.from("perfiles").select(COLS).eq("id", u.user?.id ?? "").maybeSingle();
+    return aPerfil(data as PerfilRow | null, u.user?.email ?? null);
+  },
+  async guardarPerfil(c) {
+    const sb = createClient();
+    const { data: u } = await sb.auth.getUser();
+    const patch: Record<string, unknown> = {};
+    if (c.nombre !== undefined) patch.nombre = c.nombre;
+    if (c.nombreEnHojas !== undefined) patch.nombre_en_hojas = c.nombreEnHojas;
+    if (c.hojaDefault !== undefined) patch.hoja_default = c.hojaDefault;
+    if (c.tintaDefault !== undefined) patch.tinta_default = c.tintaDefault;
+    if (c.avisarEmail !== undefined) patch.avisar_email = c.avisarEmail;
+    const { data, error } = await sb.from("perfiles").update(patch).eq("id", u.user?.id ?? "").select(COLS).single();
     if (error) throw error;
-    return (data ?? []).map((r) => ({ extension: r.extension, maxCreditos: r.max_creditos, minCreditos: r.min_creditos })) as CostoExtension[];
+    return aPerfil(data as PerfilRow, u.user?.email ?? null);
   },
-  async crearResumen(input) {
-    const { data, error } = await createClient().rpc("crear_resumen", {
+  async crearResumen(input): Promise<CrearResumenResult> {
+    const { data, error } = await createClient().rpc("armar_machete", {
       p_apuntes: input.apuntes,
       p_instrucciones: input.instrucciones ?? null,
       p_tipo: input.tipo,
-      p_extension: input.extension,
-      p_diseno: input.diseno,
+      p_largo: input.largo,
+      p_hoja: input.hoja,
       p_opciones: input.opciones,
       p_idempotency_key: input.idempotencyKey,
     });
     if (error) {
-      const map: Record<string, CrearResumenResult & { ok: false }> = {
-        saldo_insuficiente: { ok: false, error: "saldo_insuficiente" },
-        email_no_verificado: { ok: false, error: "email_no_verificado" },
-        limite_activos: { ok: false, error: "limite_activos" },
-      };
-      return map[error.message] ?? { ok: false, error: "desconocido", mensaje: error.message };
+      // Backend: raise exception '<codigo>' con detail = proximo_cupo_at (ISO) cuando aplique
+      const codigos: ErrorCrear[] = ["limite_diario", "limite_hojas", "en_curso", "limite_global", "limite_fallos", "email_no_verificado", "validacion"];
+      const code = codigos.find((c) => error.message === c) ?? "desconocido";
+      return { ok: false, error: code, proximoCupoAt: error.details || null, mensaje: error.message };
     }
-    const d = data as { resumen_id: string; creditos_reservados: number; saldo: number };
-    return { ok: true, resumenId: d.resumen_id, creditosReservados: d.creditos_reservados, saldo: d.saldo };
+    return { ok: true, resumenId: (data as { resumen_id: string }).resumen_id };
   },
   async getEstadoResumen(id) {
     const { data, error } = await createClient()
       .from("resumenes")
-      .select("id,estado,progreso,tipo,extension,opciones,creditos_reservados,creditos_cobrados,paginas,error_codigo")
+      .select("id,estado,progreso,tipo,largo,opciones,paginas,created_at,error_codigo,intentos_restantes_hoy")
       .eq("id", id)
       .maybeSingle();
     if (error || !data) return null;
-    const cobrados = data.creditos_cobrados as number | null;
     return {
-      id: data.id,
-      estado: data.estado,
-      progreso: data.progreso ?? 0,
+      id: data.id, estado: data.estado, progreso: data.progreso ?? 0,
       materia: (data.opciones as { materia?: string })?.materia ?? "",
-      tipo: data.tipo,
-      extension: data.extension,
-      creditosReservados: data.creditos_reservados,
-      creditosCobrados: cobrados,
-      creditosDevueltos: data.estado === "error" ? data.creditos_reservados : cobrados != null ? data.creditos_reservados - cobrados : null,
-      paginas: data.paginas,
-      errorCodigo: data.error_codigo ?? null,
+      tipo: data.tipo, largo: data.largo, paginas: data.paginas,
+      createdAt: data.created_at, errorCodigo: data.error_codigo ?? null,
+      intentosRestantesHoy: data.intentos_restantes_hoy ?? null,
     } as EstadoResumenDTO;
   },
   async getUrlDescarga(id) {
     const { data, error } = await createClient().rpc("url_descarga_resumen", { p_resumen_id: id });
-    if (error) return null;
-    return data as string;
-  },
-  async solicitarArrepentimiento(input) {
-    const { data, error } = await createClient().rpc("crear_solicitud_arrepentimiento", {
-      p_email: input.email,
-      p_referencia_pago: input.referenciaPago,
-      p_motivo: input.motivo ?? null,
-    });
-    if (error) {
-      if (error.message === "rate_limit") return { ok: false, error: "rate_limit" };
-      if (error.message === "validacion") return { ok: false, error: "validacion" };
-      return { ok: false, error: "desconocido" };
-    }
-    const d = data as { numero: string; created_at: string };
-    return { ok: true, numero: d.numero, creadaAt: d.created_at };
+    return error ? null : (data as string);
   },
 };

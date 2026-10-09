@@ -20,10 +20,10 @@ export function VerifyBanner({ email, verificado }: { email: string | null; veri
     setCooldown(60);
   }
   return (
-    <div className="border-b border-border bg-warning-bg text-warning">
+    <div className="border-b border-borde bg-celeste text-noche">
       <div className="mx-auto flex max-w-[1120px] flex-wrap items-center justify-between gap-2 px-4 py-2 text-sm lg:px-10">
-        <span><strong>Verificá tu email</strong> para generar y comprar.{msg && <span className="ml-2">{msg}</span>}</span>
-        <button onClick={reenviar} disabled={cooldown > 0} className="min-h-11 rounded-md border-[1.5px] border-warning bg-surface px-3 font-semibold disabled:opacity-50">
+        <span><strong>Verificá tu email</strong> para armar machetes.{msg && <span className="ml-2">{msg}</span>}</span>
+        <button onClick={reenviar} disabled={cooldown > 0} className="min-h-11 rounded-md border-[1.5px] border-noche bg-hoja px-3 font-semibold disabled:opacity-50">
           {cooldown > 0 ? `Reenviar (${cooldown} s)` : "Reenviar"}
         </button>
       </div>

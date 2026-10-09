@@ -9,8 +9,8 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const tokenHash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
-  const volver = searchParams.get("volver") ?? "/biblioteca";
-  const safeNext = volver.startsWith("/") && !volver.startsWith("//") ? volver : "/biblioteca";
+  const volver = searchParams.get("volver") ?? "/nuevo";
+  const safeNext = volver.startsWith("/") && !volver.startsWith("//") ? volver : "/nuevo";
 
   if (!isSupabaseConfigured) return NextResponse.redirect(`${origin}/ingresar`); // modo demo
   const supabase = await createClient();

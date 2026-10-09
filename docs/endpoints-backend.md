@@ -1,52 +1,21 @@
-# Macheteo — Contrato Frontend ↔ Backend (propuesta, a confirmar)
+# Macheteo: contrato Frontend ↔ Backend v2 (pivot gratuito, 2026-10-09)
 
-Todo vía Supabase (PostgREST/RPC con JWT del usuario + RLS). Nombres propuestos; el front los consume desde `src/lib/api/supabase.ts`
-(interfaz `MacheteoApi` en `src/lib/api/types.ts`). Hoy corre con `mockApi` (`NEXT_PUBLIC_API_MODE=mock`).
+Todo va por Supabase (PostgREST/RPC con el JWT del usuario + RLS). Migraciones: `macheteo-backend/supabase/migrations/`.
+Versión anterior (créditos): `endpoints-backend.v1-creditos.md`. **Se quitan** `obtener_saldo`, `costos_extension`, saldo, reservas, MP, historial y arrepentimiento.
 
-| # | Necesidad | Propuesta | Respuesta | Historias |
+| # | Necesidad | Implementación | Respuesta / notas | Historias |
 |---|---|---|---|---|
-| 1 | Saldo | RPC `obtener_saldo()` (security definer, solo el usuario actual) | `{ saldo int (disponible, reservas ya descontadas), reservados int (reservas de resúmenes en curso), por_vencer_cantidad int?, por_vencer_at timestamptz?, email_verificado bool }` | CR-01, NR-04, NR-07 |
-| 2 | Costos por extensión | Tabla/vista `costos_extension` (lectura pública) | `[{ extension, max_creditos, min_creditos }]` — machete 2/1, corto 4/2, medio 8/4, completo 16/8 | NR-04 |
-| 3 | Crear resumen + reservar | RPC `crear_resumen(p_apuntes, p_instrucciones, p_tipo, p_extension, p_diseno, p_opciones jsonb, p_idempotency_key uuid)` — crea `resumenes` (`en_cola`) + `reserva −máx` en 1 transacción; valida 300–40.000 / 1.000 chars, email verificado, saldo; idempotente por key | OK: `{ resumen_id, creditos_reservados, saldo }`. Error: `raise exception` con mensaje exacto `saldo_insuficiente` \| `email_no_verificado` \| `limite_activos` \| `validacion` | NR-01, NR-06, NR-07 |
-| 4 | Estado del job | `select` en `resumenes` (RLS dueño): `id, estado, progreso 0-100, tipo, extension, opciones, creditos_reservados, creditos_cobrados, paginas, error_codigo` (+ opcional `posicion_cola` para "Hay N antes que vos") + Realtime habilitado en la tabla | estados: `en_cola \| generando \| armando \| listo \| error` | GE-03 |
-| 5 | Descarga | RPC/Edge Function `url_descarga_resumen(p_resumen_id)` → signed URL 5 min de `resumenes/{user_id}/{id}.pdf` | `text` (URL) | GE-03, BI-02 |
-| 6 | Perfil | `select` en `perfiles` (nombre, último uso de colores/diseño) + materias previas para autocompletar | — | NR-06 |
-| 7 | Registro T&C | Trigger sobre `auth.users` que lea `raw_user_meta_data.acepto_terminos / version_terminos` y complete `perfiles.acepto_terminos_at / version_terminos` | — | CU-01 |
-| 8 | Auth config | Site URL + Redirect URLs: `{SITE_URL}/auth/callback`; plantillas de email (confirm / recovery) que apunten a `/auth/callback?token_hash={{ .TokenHash }}&type=...`; Google OAuth habilitado; captcha (si se activa, el front necesita la site key) | — | CU-01..04, CU-07 |
-| 9 | Semana 3 | Historial agrupado por resumen (vista `movimientos_agrupados`), crear preferencia MP (`crear_pago(pack)` → `init_point`), listado biblioteca, reportar error | — | CR-03, CR-05, BI-01..03 |
+| 1 | Uso del día (reemplaza saldo) | RPC `obtener_uso()` | `{ email_verificado, machetes_hoy, machetes_limite, machetes_restantes, hojas_hoy, hojas_limite, hojas_restantes, en_curso, en_curso_limite, proximo_cupo_at (timestamptz \| null, solo si llegó al límite), errores_usuario_hoy, errores_usuario_limite, bloqueado_hasta (timestamptz \| null: 00:00 ART siguiente si llegó a 3 errores propios), limite_global_alcanzado }` | LU-01, LU-02, NR-04, DO-04 |
+| 2 | Largos | Tabla `largos` (lectura pública, anon) | `[{ extension, hojas_max }]`: machete 2 · corto 4 · medio 8 · completo 16 | NR-04 |
+| 3 | Armar mi machete | **Route handler de Next** `POST /api/machetes` (N-04): valida el JWT (`auth.getUser()`), calcula `p_ip_hashes text[] = [HMAC(IP_HASH_SECRET, prefijo), HMAC(IP_HASH_SECRET_ANTERIOR, prefijo)]` (prefijo de x-real-ip: /32 v4 · /64 v6; el 2º hash solo durante las 24 h de solapamiento tras rotar la clave; sin header IP → `[]`/null = bucket `desconocido` con su propio límite, fail-closed, N-18) y llama con service_role a `crear_resumen(p_user_id, p_ip_hashes, p_apuntes, p_instrucciones, p_tipo, p_extension, p_diseno, p_tinta, p_opciones jsonb, p_idempotency_key uuid)`. El usuario **no** puede llamar la RPC directo | OK: `{ resumen_id, estado, hojas_max }`. Error (mensaje exacto): `email_no_verificado` · `terminos_no_aceptados` · `validacion` · `limite_errores` (N-03, DETAIL `{vuelve_at}`) · `limite_activos` · `limite_diario` (DETAIL JSON `{vuelve_at, machetes_restantes, hojas_restantes}` o `{motivo:"ip"\|"ip_desconocida"}`) · `limite_global` · `cuenta_inexistente` (N-11). `p_opciones.materia` es obligatoria (1–60); `nombre_en_hojas` y `fecha` van en `p_opciones`. `p_diseno`/`p_tinta` null usan los defaults del perfil. "Machete de 1 hoja" fuerza `machete` sin avisar. Misma key, misma respuesta. | NR-01..07, LU-01/02 |
+| 3b | Reintentar | Mismo route handler → `reintentar_resumen(p_user_id, p_ip_hashes, p_resumen_id, p_idempotency_key)` (service_role) | Solo para un machete propio en `error`. Crea un job nuevo con los mismos apuntes (`reintento_de`) y aplica los mismos límites y errores. | GE-03, GE-04 |
+| 4 | Estado del job | `select` explícito en `resumenes` (RLS dueño): `id, estado, progreso, tipo, extension, diseno, tinta, materia, opciones, hojas_max, paginas, error_codigo, error_origen (`usuario \| plataforma`: los de usuario no cuentan para el límite diario pero sí para el tope de 3/día ART; los de plataforma no cuentan para nada), en_cola_at, listo_at, error_at, created_at` + Realtime (`supabase_realtime`) | Estados `en_cola \| generando \| armando \| listo \| error`. **`select=*` falla** por privilegios de columna (apuntes, costos y error interno están ocultos). | GE-03, BI-01 |
+| 5 | Descarga | Edge Function `url_descarga_resumen` → `supabase.functions.invoke('url_descarga_resumen', { body: { p_resumen_id } })` | `{ url }` firmada por 5 min con nombre `Macheteo - {Materia} - {Tipo} - {fecha}.pdf`. Errores 401/404/409 (`no_listo`). | GE-03, BI-02 |
+| 6 | Perfil | `select` explícito en `perfiles`: `nombre, email, nombre_en_hojas, hoja_default, tinta_default, avisar_email, acepto_terminos_at, version_terminos, email_verificado_at`. `update` solo de `nombre, nombre_en_hojas, hoja_default, tinta_default, avisar_email`. RPC `mis_materias()` → `text[]` | `ip_registro` y `limite_override` no son visibles. | DO-04, NR-06 |
+| 7 | Registro T&C | Trigger en `auth.users` que lee `raw_user_meta_data.acepto_terminos` (bool) y `version_terminos`. Google: RPC `aceptar_terminos(p_version)` | | CU-01, CU-02 |
+| 8 | Reportar error | `insert` en `reportes (resumen_id, motivo, texto)` | motivo: `contenido_incorrecto \| falto_tema \| diseno_roto \| otro` | BI-03 |
+| 9 | Eliminar cuenta | Solo server-side (route de Next con service_role): `eliminar_cuenta(user_id)` → `{email, pdf_paths}` → `storage.remove(pdf_paths)` → `auth.admin.deleteUser` → email de baja | Cancela los jobs en curso y borra perfil, machetes y reportes. Solo queda el costo anónimo (`gasto_api`). | CU-06 |
+| 10 | Donación | **Sin backend.** `DONACION_ALIAS`, `DONACION_CVU`, `DONACION_TITULAR`, `DONACION_ACTIVA` en Vercel y `public/donacion-qr.png` | | DO-01 |
+| 11 | Auth | Site URL y Redirect URLs `{SITE_URL}/auth/callback`. Plantillas → `/auth/callback?token_hash={{ .TokenHash }}&type=...`. Google habilitado. Captcha: site key al front | Pendiente de dashboard (ver README) | CU-01..04, CU-07 |
 
-Decisiones: PA-07 y PA-08 **aprobadas** como están implementadas (mínimo = ceil(máx/2); "Machete de 1 hoja" = 1 hoja A4 anverso y reverso = 2 págs, fuerza extensión Machete, costo hasta 2 créditos, mín. 1). Abierta: PA-13.
-
-Rutas de redirect a configurar en Supabase Auth: `/auth/callback` (param `volver=`). Errores de link → `/verificar?estado=vencido` o `/recuperar?estado=vencido`; recovery OK → `/recuperar/nueva`.
-
----
-
-## 10. Botón de arrepentimiento (Res. SCI 424/2020) · P0 · propuesta
-
-Formulario público `/arrepentimiento` (sin login, link en el footer de todas las páginas). Procesamiento **manual**.
-
-**Tabla `solicitudes_arrepentimiento`**
-
-| columna | tipo | notas |
-|---|---|---|
-| `id` | uuid PK default `gen_random_uuid()` | |
-| `numero` | text UNIQUE NOT NULL | legible, ej. `ARR-2026-000123` (secuencia `solicitudes_arrepentimiento_seq`, con padding) |
-| `email` | text NOT NULL | normalizado a minúsculas |
-| `referencia_pago` | text NOT NULL | lo que escribe el usuario (nro. de operación MP o `external_reference`) |
-| `motivo` | text NULL | opcional, máx. 1.000 (la norma no exige justificar) |
-| `user_id` | uuid NULL → `auth.users` | si hay sesión, `auth.uid()` |
-| `pago_id` | uuid NULL → `pagos` | match automático si `referencia_pago` = `pagos.mp_payment_id` o `pagos.id` y el email coincide; si no, lo completa el equipo |
-| `estado` | text NOT NULL default `'recibida'` | `recibida \| en_revision \| aprobada \| rechazada` (actualiza solo el equipo) |
-| `ip` | inet NULL | para rate limit/auditoría |
-| `created_at` / `resuelta_at` | timestamptz | |
-
-RLS: sin `select/update/delete` para `anon`/`authenticated`; sin insert directo. Solo vía la RPC.
-
-**RPC `crear_solicitud_arrepentimiento(p_email text, p_referencia_pago text, p_motivo text default null)`** — `security definer`, `grant execute to anon, authenticated`.
-- Valida: email con formato válido, `referencia_pago` 3–100 caracteres, `motivo` ≤ 1.000 → si no, `raise exception 'validacion'`.
-- Rate limit: máx. 5 por IP/hora y 3 por email/día → `raise exception 'rate_limit'`.
-- Inserta y devuelve `{ numero text, created_at timestamptz }`. El front muestra el número ("Guardalo").
-- Efectos (Backend): email de acuse a usuario y equipo vía Resend con el número (la norma pide informar el código dentro de las 24 h), y alerta interna.
-- Reversión de créditos/reembolso MP: manual (admin), con movimiento negativo en el ledger si corresponde; ver PA-11.
-
-Front: `MacheteoApi.solicitarArrepentimiento({ email, referenciaPago, motivo? })` → `{ ok: true, numero, creadaAt } | { ok: false, error: 'validacion' | 'rate_limit' | 'desconocido' }` (mock en `src/lib/api/mock.ts`, real en `src/lib/api/supabase.ts`).
+Enums: `tipo` = `ejercicios | teoria | machete | autoevaluacion` · `extension` = `machete | corto | medio | completo` · `diseno` = `rayado | cuadriculado | punteado` · `tinta` = `azul | negro | verde | violeta`.

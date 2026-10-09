@@ -7,7 +7,7 @@ export const metadata = { title: "Entrar · Macheteo" };
 export default async function Page({ searchParams }: { searchParams: Promise<{ volver?: string; estado?: string }> }) {
   const { volver, estado } = await searchParams;
   return (
-    <AuthCard titulo="Entrá a tu cuenta" pie={<>¿No tenés cuenta? <Link href="/registro" className="font-semibold text-primary">Registrate</Link></>}>
+    <AuthCard titulo="Entrá a tu cuenta" pie={<>¿No tenés cuenta? <Link href="/registro" className="font-semibold text-birome">Registrate</Link></>}>
       {estado === "contrasena_actualizada" && <Aviso tipo="ok">Listo, actualizamos tu contraseña. Entrá con la nueva.</Aviso>}
       {volver && <Aviso tipo="info">Tu sesión venció. Entrá de nuevo y seguís donde estabas.</Aviso>}
       <LoginForm volver={safeVolver(volver)} />

@@ -34,7 +34,7 @@ export function SignupForm() {
         email,
         password,
         options: {
-          emailRedirectTo: `${SITE_URL}/auth/callback?volver=/biblioteca`,
+          emailRedirectTo: `${SITE_URL}/auth/callback?volver=/nuevo`,
           // El trigger de perfiles (Backend) lee estos metadatos para acepto_terminos_at / version_terminos.
           data: { acepto_terminos: true, version_terminos: VERSION_TERMINOS },
         },
@@ -58,10 +58,10 @@ export function SignupForm() {
         <Campo id="email" label="Email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errores.email} />
         <Campo id="password" label="Contraseña" type="password" autoComplete="new-password" placeholder="Mínimo 8 caracteres" value={password} onChange={(e) => setPassword(e.target.value)} error={errores.password} />
         <label className="mb-5 flex items-start gap-3 text-sm">
-          <input type="checkbox" checked={acepto} onChange={(e) => setAcepto(e.target.checked)} className="mt-0.5 h-5 w-5 accent-primary" aria-invalid={Boolean(errores.acepto)} />
+          <input type="checkbox" checked={acepto} onChange={(e) => setAcepto(e.target.checked)} className="mt-0.5 h-5 w-5 accent-birome" aria-invalid={Boolean(errores.acepto)} />
           <span>
-            Acepto los <Link href="/terminos" className="text-primary underline">Términos y Condiciones</Link> y la{" "}
-            <Link href="/privacidad" className="text-primary underline">Política de Privacidad</Link> (Ley 25.326).
+            Acepto los <Link href="/terminos" className="text-birome underline">Términos y Condiciones</Link> y la{" "}
+            <Link href="/privacidad" className="text-birome underline">Política de Privacidad</Link> (Ley 25.326).
             {errores.acepto && <InlineError>{errores.acepto}</InlineError>}
           </span>
         </label>

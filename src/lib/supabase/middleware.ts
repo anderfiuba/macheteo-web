@@ -2,9 +2,9 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, isSupabaseConfigured } from "@/lib/config";
 
-const PROTECTED = ["/nuevo", "/resumenes", "/creditos", "/biblioteca", "/cuenta", "/recuperar/nueva"];
+const PROTECTED = ["/nuevo", "/resumenes", "/biblioteca", "/perfil", "/recuperar/nueva"];
 const AUTH_ONLY_GUEST = ["/ingresar", "/registro"];
-const HOME_LOGUEADO = "/biblioteca"; // D3
+const HOME_LOGUEADO = "/nuevo"; // referencia "Birome": la app abre en Nuevo machete
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });

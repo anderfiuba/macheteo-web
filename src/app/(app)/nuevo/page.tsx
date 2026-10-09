@@ -1,8 +1,7 @@
-import { Wizard } from "@/components/wizard/Wizard";
+import { NuevoMachete } from "@/components/nuevo/NuevoMachete";
 
-export const metadata = { title: "Nuevo resumen · Macheteo" };
+export const metadata = { title: "Nuevo machete · Macheteo" };
 
-// Ruta única /nuevo?paso=1..5 (flows.md D2)
 export default function Page() {
-  return <Wizard />;
+  return <NuevoMachete />;
 }

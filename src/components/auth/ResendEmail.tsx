@@ -27,7 +27,7 @@ export function ResendEmail({ emailInicial }: { emailInicial?: string }) {
       <Boton type="button" variante="secundario" onClick={reenviar} disabled={cooldown > 0}>
         {cooldown > 0 ? `Reenviar email (${cooldown} s)` : "Reenviar email"}
       </Boton>
-      {msg && <p role="status" className="mt-2 text-center text-sm text-ink-muted">{msg}</p>}
+      {msg && <p role="status" className="mt-2 text-center text-sm text-gastado">{msg}</p>}
     </div>
   );
 }

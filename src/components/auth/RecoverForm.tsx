@@ -26,7 +26,7 @@ export function RecoverForm({ vencido }: { vencido?: boolean }) {
   return (
     <form onSubmit={onSubmit} noValidate>
       {vencido && <Aviso tipo="warning">El link venció o ya se usó. Pedí uno nuevo.</Aviso>}
-      <p className="mb-5 text-sm text-ink-muted">Escribí tu email y te mandamos un link para crear una contraseña nueva.</p>
+      <p className="mb-5 text-sm text-gastado">Escribí tu email y te mandamos un link para crear una contraseña nueva.</p>
       <Campo id="email" label="Email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={err} />
       <Boton type="submit" cargando={cargando}>Mandarme el link</Boton>
     </form>
