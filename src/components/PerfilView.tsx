@@ -47,7 +47,7 @@ export function PerfilView() {
 
       {uso && (
         <section aria-label="Uso de hoy" className="rounded-lg border border-borde px-4 py-3">
-          <p className="tnum text-sm">Hoy armaste <strong>{uso.machetesUsados} de {uso.machetesMax}</strong> machetes.</p>
+          <p className="tnum text-sm">Hoy usaste <strong>{uso.hojasUsadas} de {uso.hojasMax}</strong> hojas{uso.machetesUsados ? ` (${uso.machetesUsados} ${uso.machetesUsados === 1 ? "machete" : "machetes"})` : ""}.</p>
           <AvisoUso uso={uso} className="mt-1" />
         </section>
       )}
@@ -80,7 +80,7 @@ export function PerfilView() {
         <div className={fila}>
           <span id="avisar-label">Avisarme por mail cuando esté listo</span>
           <button
-            type="button" role="switch" aria-checked={p.avisarEmail} aria-labelledby="avisar-label" onClick={() => guardar({ avisarEmail: !p.avisarEmail })}
+            type="button" role="switch" aria-checked={p.avisarEmail} aria-labelledby="avisar-label" onClick={() => { guardar({ avisarEmail: !p.avisarEmail }); api.registrarEvento("preferencia_mail_cambiada", { valor: !p.avisarEmail }); }}
             className={`relative h-7 w-12 rounded-full transition ${p.avisarEmail ? "bg-birome" : "bg-borde-fuerte"}`}
           >
             <span className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-all ${p.avisarEmail ? "left-6" : "left-1"}`} />

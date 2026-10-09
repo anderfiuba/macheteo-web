@@ -8,23 +8,17 @@ export const API_MODE: "mock" | "supabase" =
 export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 
 /**
- * DO-01 · Datos de donación (estáticos, sin integración con Mercado Pago).
- * Si no hay env vars se usan DATOS DE EJEMPLO y la UI lo marca como tal.
- * Un renglón vacío ("") se oculta; NEXT_PUBLIC_DONACION_ACTIVA=false oculta toda la donación.
+ * DO-01 · Datos de donación (estáticos, sin integración con Mercado Pago). Datos reales provistos por PM (2026-10-09).
+ * Las env vars NEXT_PUBLIC_DONACION_* pisan los defaults; un valor vacío ("") oculta ese renglón (hoy: sin CVU ni QR).
+ * NEXT_PUBLIC_DONACION_ACTIVA=false oculta la tarjeta y todos los accesos a donar.
  */
-const env = (v: string | undefined) => (v === undefined ? undefined : v.trim());
-const alias = env(process.env.NEXT_PUBLIC_DONACION_ALIAS);
-const cvu = env(process.env.NEXT_PUBLIC_DONACION_CVU);
-const titular = env(process.env.NEXT_PUBLIC_DONACION_TITULAR);
-const qr = env(process.env.NEXT_PUBLIC_DONACION_QR_URL);
-const esEjemplo = alias === undefined && cvu === undefined && titular === undefined;
+const env = (v: string | undefined, def: string) => (v === undefined ? def : v.trim());
 
 export const DONACION = {
-  esEjemplo,
-  alias: esEjemplo ? "macheteo.donaciones" : alias ?? "",
-  cvu: esEjemplo ? "0000003100000000000000" : cvu ?? "",
-  titular: esEjemplo ? "Anderson Brayner, cuenta de Mercado Pago." : titular ?? "",
-  qrUrl: esEjemplo ? "/donacion-qr-ejemplo.svg" : qr ?? "",
+  alias: env(process.env.NEXT_PUBLIC_DONACION_ALIAS, "macheteo.donacion.mp"),
+  cvu: env(process.env.NEXT_PUBLIC_DONACION_CVU, ""),
+  titular: env(process.env.NEXT_PUBLIC_DONACION_TITULAR, "Anderson Cavalcante Brayner"),
+  qrUrl: env(process.env.NEXT_PUBLIC_DONACION_QR_URL, ""),
 };
 export const DONACION_ACTIVA =
   process.env.NEXT_PUBLIC_DONACION_ACTIVA !== "false" && Boolean(DONACION.alias || DONACION.cvu || DONACION.qrUrl);

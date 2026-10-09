@@ -7,7 +7,7 @@ import {
   HOJAS, LARGOS, LIMITES, MACHETE_1_HOJA, TINTAS, TIPOS, fechaCorta, formatNumero, hojasDe, paginasDeGuia,
   type Hoja, type Largo, type Tinta, type TipoResumen,
 } from "@/lib/catalog";
-import { AvisoUso, cuandoVuelve, enLimite, hojasRestantes, useUso } from "@/components/UsoProvider";
+import { AvisoUso, bloqueado, cuandoVuelve, hojasRestantes, useUso } from "@/components/UsoProvider";
 import { LineaDonar } from "@/components/donacion/Donacion";
 import { Preview } from "./Preview";
 
@@ -44,12 +44,14 @@ function sanear(b: Borrador): Borrador {
 /** NR-01..07 · S08 · "Nuevo machete" en una sola pantalla, con preview en vivo "Así va a salir". */
 export function NuevoMachete() {
   const router = useRouter();
-  const { uso, refrescar } = useUso();
+  const { uso, enCurso, refrescar } = useUso();
+  const [materias, setMaterias] = useState<string[]>([]);
+  const [iniciado, setIniciado] = useState(false);
   const [b, setB] = useState<Borrador | null>(null);
   const [verIndicaciones, setVerIndicaciones] = useState(false);
   const [verOpcionesMobile, setVerOpcionesMobile] = useState(false);
   const [enviando, setEnviando] = useState(false);
-  const [error, setError] = useState<{ code: ErrorCrear; proximo?: string | null } | null>(null);
+  const [error, setError] = useState<{ code: ErrorCrear; vuelve?: string | null; motivo?: string | null } | null>(null);
   const [clave, setClave] = useState<string>("");
   const [tocado, setTocado] = useState(false);
 
@@ -64,6 +66,7 @@ export function NuevoMachete() {
       }
     } catch {}
     setClave(nuevaClave());
+    api.getMaterias().then(setMaterias, () => {});
     if (tieneBorrador) {
       setB(inicial);
       if (inicial.instrucciones) setVerIndicaciones(true);
@@ -88,7 +91,7 @@ export function NuevoMachete() {
 
   const len = b?.apuntes.length ?? 0;
   const quedanHojas = uso ? hojasRestantes(uso) : Infinity;
-  const bloqueadoPorUso = !!uso && (uso.limiteGlobal || enLimite(uso) || uso.enCurso >= uso.enCursoMax || !uso.emailVerificado);
+  const bloqueadoPorUso = !!uso && bloqueado(uso);
 
   const errores = useMemo(() => {
     if (!b) return {};
@@ -97,7 +100,7 @@ export function NuevoMachete() {
     else if (len < LIMITES.apuntesMin) e.apuntes = `Pegá al menos ${LIMITES.apuntesMin} caracteres para que el machete tenga de dónde salir.`;
     if (!b.tipo) e.tipo = "Elegí un tipo de resumen.";
     if (!b.largo) e.largo = "Elegí el largo.";
-    else if (hojasDe(b.largo) > quedanHojas) e.largo = `Hoy te quedan ${quedanHojas} hojas. Probá un largo menor o volvé mañana.`;
+    else if (hojasDe(b.largo) > quedanHojas) e.largo = `Te quedan ${quedanHojas} hojas hoy: este largo no entra. Elegí uno más corto; mañana se renueva.`;
     if (!b.materia.trim()) e.materia = "Poné la materia: va arriba de cada hoja.";
     return e;
   }, [b, len, quedanHojas]);
@@ -115,7 +118,12 @@ export function NuevoMachete() {
     e.preventDefault(); // normaliza a texto plano
     const text = e.clipboardData.getData("text/plain").replace(/\r\n/g, "\n").replace(/\u00a0/g, " ");
     const el = e.currentTarget;
-    set("apuntes", el.value.slice(0, el.selectionStart) + text + el.value.slice(el.selectionEnd));
+    const nuevo = el.value.slice(0, el.selectionStart) + text + el.value.slice(el.selectionEnd);
+    set("apuntes", nuevo);
+    if (!iniciado && text.trim()) {
+      setIniciado(true);
+      api.registrarEvento("machete_iniciado", { caracteres: nuevo.length }); // plan-beta §9: primer pegado
+    }
   }
 
   async function armar() {
@@ -131,12 +139,15 @@ export function NuevoMachete() {
         tipo: b.tipo,
         largo: b.largo,
         hoja: b.hoja,
-        opciones: { nombre: b.nombre.trim(), materia: b.materia.trim(), fecha: b.fecha, tinta: b.tinta },
+        tinta: b.tinta,
+        opciones: { nombre_en_hojas: b.nombre.trim(), materia: b.materia.trim(), fecha: b.fecha },
         idempotencyKey: clave,
       });
       if (!r.ok) {
         setEnviando(false);
-        setError({ code: r.error, proximo: r.proximoCupoAt });
+        setError({ code: r.error, vuelve: r.vueltaAt, motivo: r.motivo });
+        if (r.error === "limite_diario" || r.error === "limite_activos" || r.error === "limite_errores")
+          api.registrarEvento("limite_alcanzado", { tipo: r.error === "limite_activos" ? "simultaneos" : r.error === "limite_errores" ? "errores" : r.motivo ? `dia_${r.motivo}` : "dia" });
         refrescar();
         return;
       }
@@ -151,16 +162,19 @@ export function NuevoMachete() {
   }
 
   const msgError: Record<ErrorCrear, string> = {
-    limite_diario: `Llegaste al límite de hoy. ${cuandoVuelve(error?.proximo ?? null)} podés armar otro.`,
-    limite_hojas: `Hoy te quedan ${quedanHojas === Infinity ? "pocas" : quedanHojas} hojas. Probá un largo menor o volvé mañana.`,
-    en_curso: `Ya tenés ${uso?.enCursoMax ?? 1} ${uso && uso.enCursoMax > 1 ? "machetes armándose" : "machete armándose"}. Esperá a que termine.`,
+    limite_diario: error?.motivo
+      ? "Desde esta conexión ya se armaron muchos machetes hoy. Probá más tarde o desde otra red."
+      : `Llegaste al límite de hoy. ${cuandoVuelve(error?.vuelve ?? null)} podés armar otro.`,
+    limite_activos: "Ya tenés un machete armándose. Esperá que termine para armar otro.",
+    limite_errores: "Llegaste al máximo de intentos fallidos de hoy. Mañana podés volver a probar.",
     limite_global: "Hoy Macheteo llegó a su límite. Volvé mañana.",
-    limite_fallos: "Llegaste al máximo de intentos fallidos de hoy. Mañana podés volver a probar.",
     email_no_verificado: "Verificá tu email para armar tu machete. Te mandamos el link cuando te registraste.",
+    terminos_no_aceptados: "Para armar tu machete tenés que aceptar los Términos y la Política de Privacidad.",
+    cuenta_inexistente: "Tu cuenta ya no existe. Cerrá sesión y volvé a registrarte.",
+    no_autenticado: "Tu sesión venció. Volvé a entrar: tu texto queda guardado acá.",
     validacion: "Revisá el formulario: algo no pasó la validación.",
     desconocido: "No pudimos arrancar tu machete. Revisá tu conexión y probá de nuevo.",
   };
-
   const label = "mb-2 block text-sm font-semibold";
   const resumenMobile = `Hoja ${HOJAS.find((h) => h.id === b.hoja)?.nombre.toLowerCase()}, tinta ${TINTAS.find((t) => t.id === b.tinta)?.nombre.toLowerCase()} · ${[b.nombre || "Tu nombre", b.materia || "Materia", fechaCorta(b.fecha)].join(", ")}`;
 
@@ -168,7 +182,7 @@ export function NuevoMachete() {
     <div className="lg:grid lg:grid-cols-[1fr_330px] lg:gap-8">
       <div>
         <h1 className="text-[28px] leading-[34px] lg:text-[36px] lg:leading-[42px]">Nuevo machete</h1>
-        <AvisoUso uso={uso} className="mt-3" />
+        <AvisoUso uso={uso} enCurso={enCurso} className="mt-3" />
 
         {/* Guía o apunte */}
         <label htmlFor="apuntes" className={`${label} mt-6`}>Tu guía o apunte</label>
@@ -232,15 +246,23 @@ export function NuevoMachete() {
                 return (
                   <button
                     key={l.id} type="button" disabled={forzado || sinCupo} aria-pressed={b.largo === l.id} onClick={() => set("largo", l.id)}
-                    title={forzado ? "El Machete de 1 hoja es una hoja doble faz: 2 hojas." : sinCupo ? `Hoy te quedan ${quedanHojas} hojas.` : undefined}
+                    title={forzado ? "El Machete de 1 hoja es una hoja doble faz: 2 hojas." : sinCupo ? `No entra en tus ${quedanHojas} hojas de hoy. Mañana se renueva.` : undefined}
+                    aria-describedby={sinCupo ? "largo-cupo" : undefined}
                     className={`flex flex-col items-start rounded-md px-3 py-2 text-left transition disabled:cursor-not-allowed disabled:opacity-40 ${b.largo === l.id ? "bg-birome text-white" : "hover:bg-hoja"}`}
                   >
                     <span className="font-serif text-2xl leading-none">{l.hojas}</span>
                     <span className="text-xs">{l.nombre}</span>
+                    {sinCupo && !forzado && <span className="text-[11px] leading-tight">Mañana</span>}
                   </button>
                 );
               })}
             </div>
+            {Number.isFinite(quedanHojas) && (
+              <p id="largo-cupo" className="tnum mt-1 text-xs">
+                Te quedan <strong>{quedanHojas} {quedanHojas === 1 ? "hoja" : "hojas"}</strong> hoy.
+                {LARGOS.some((l) => l.hojas > quedanHojas) && " Los largos que no entran quedan apagados. Mañana se renueva."}
+              </p>
+            )}
             <p className="mt-1 text-xs text-gastado">
               {b.tipo === "machete"
                 ? "El Machete de 1 hoja es una hoja doble faz: 2 hojas."
@@ -267,9 +289,11 @@ export function NuevoMachete() {
         {/* Desktop: nombre, materia, fecha */}
         <div className="mt-6 hidden gap-4 md:grid md:grid-cols-[1fr_1fr_120px]">
           <Campo id="nombre" label="Tu nombre" value={b.nombre} maxLength={LIMITES.nombreMax} placeholder="Va arriba de cada hoja" onChange={(v) => set("nombre", v)} />
-          <Campo id="materia" label="Materia" value={b.materia} maxLength={LIMITES.materiaMax} placeholder="Ej.: Análisis I" onChange={(v) => set("materia", v)} error={tocado ? errores.materia : undefined} />
+          <Campo id="materia" label="Materia" value={b.materia} maxLength={LIMITES.materiaMax} placeholder="Ej.: Análisis I" onChange={(v) => set("materia", v)} error={tocado ? errores.materia : undefined} list="mis-materias" />
           <Campo id="fecha" label="Fecha" type="date" value={b.fecha} onChange={(v) => set("fecha", v)} />
         </div>
+
+        <datalist id="mis-materias">{materias.map((m) => <option key={m} value={m} />)}</datalist>
 
         {verOpcionesMobile && (
           <div role="dialog" aria-modal="true" aria-label="Así va a salir" className="fixed inset-0 z-40 flex items-end bg-[var(--overlay)] md:hidden" onClick={() => setVerOpcionesMobile(false)}>
@@ -282,7 +306,7 @@ export function NuevoMachete() {
                 <Campo id="m-nombre" label="Tu nombre" value={b.nombre} maxLength={LIMITES.nombreMax} onChange={(v) => set("nombre", v)} />
                 <Campo id="m-fecha" label="Fecha" type="date" value={b.fecha} onChange={(v) => set("fecha", v)} />
               </div>
-              <Campo id="m-materia" label="Materia" value={b.materia} maxLength={LIMITES.materiaMax} placeholder="Ej.: Análisis I" onChange={(v) => set("materia", v)} error={tocado ? errores.materia : undefined} />
+              <Campo id="m-materia" label="Materia" value={b.materia} maxLength={LIMITES.materiaMax} placeholder="Ej.: Análisis I" onChange={(v) => set("materia", v)} error={tocado ? errores.materia : undefined} list="mis-materias" />
               <button type="button" onClick={() => setVerOpcionesMobile(false)} className="h-[52px] w-full rounded-md bg-birome font-semibold text-white hover:bg-noche">Listo</button>
             </div>
           </div>
@@ -362,7 +386,7 @@ function SelectorTinta({ valor, onChange }: { valor: Tinta; onChange: (t: Tinta)
   );
 }
 
-function Campo({ id, label, value, onChange, error, ...rest }: { id: string; label: string; value: string; onChange: (v: string) => void; error?: string; maxLength?: number; placeholder?: string; type?: string }) {
+function Campo({ id, label, value, onChange, error, ...rest }: { id: string; label: string; value: string; onChange: (v: string) => void; error?: string; maxLength?: number; placeholder?: string; type?: string; list?: string }) {
   return (
     <label htmlFor={id} className="block">
       <span className="mb-2 block text-sm font-semibold">{label}</span>

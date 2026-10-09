@@ -19,3 +19,19 @@ Versión anterior (créditos): `endpoints-backend.v1-creditos.md`. **Se quitan**
 | 11 | Auth | Site URL y Redirect URLs `{SITE_URL}/auth/callback`. Plantillas → `/auth/callback?token_hash={{ .TokenHash }}&type=...`. Google habilitado. Captcha: site key al front | Pendiente de dashboard (ver README) | CU-01..04, CU-07 |
 
 Enums: `tipo` = `ejercicios | teoria | machete | autoevaluacion` · `extension` = `machete | corto | medio | completo` · `diseno` = `rayado | cuadriculado | punteado` · `tinta` = `azul | negro | verde | violeta`.
+
+---
+
+## Notas del Front (macheteo-web, 2026-10-09)
+
+**Implementado según este contrato:** `src/lib/api/supabase.ts` (select explícitos en `resumenes`/`perfiles`, `obtener_uso`, `mis_materias`, `url_descarga_resumen` vía `functions.invoke`), `src/app/api/machetes/route.ts` (#3 y #3b: `{…, idempotency_key}` → `crear_resumen`; `{reintentar_de, idempotency_key}` → `reintentar_resumen`; JWT con `auth.getUser()`, `p_ip_hashes` de `x-real-ip` con `IP_HASH_SECRET` [+ `IP_HASH_SECRET_ANTERIOR`], service role server-only). El route responde `{ error, vuelve_at, motivo }` con los códigos exactos de la RPC.
+
+**Env server-only en Vercel:** `SUPABASE_SERVICE_ROLE_KEY`, `IP_HASH_SECRET`, `IP_HASH_SECRET_ANTERIOR` (solo 24 h tras rotar).
+
+**Pedidos / a confirmar con Backend:**
+1. **Límites (PM 2026-10-09):** 16 hojas por día; cada machete descuenta su largo (2/4/8/16); **sin tope de cantidad** de machetes; 1 en curso; 3 errores propios/día. Hoy `config` tiene `limite_hojas_dia=24` y `limite_machetes_dia=3` → cambiar a 16 y quitar (o subir) el de machetes. El front trata `machetes_limite = 0` como "sin tope"; si llega > 0 lo respeta.
+2. **PA-13 "Editar y reintentar":** los apuntes quedan server-side 7 días en `error`, pero no son legibles con el JWT. Hoy el front lo resuelve con `GET /api/machetes/[id]/pedido` (service role, filtra `user_id`, `estado='error'`, `error_at` ≤ 7 días) y lee `apuntes, instrucciones, tipo, extension, diseno, tinta, materia, opciones`. Si prefieren, reemplazar por RPC `obtener_pedido(p_user_id, p_resumen_id)`; fallback: copia local en el dispositivo.
+3. **Intentos restantes (N-19):** se calculan como `errores_usuario_limite − errores_usuario_hoy` de `obtener_uso()`. Error "de contenido" = `error_origen = 'usuario'` (o código `tope_costo`/`render_timeout`).
+4. **`declarar_donacion(p_monto numeric default null)`** → `{ ok: true }`; si ya declaró hoy, `raise exception 'ya_declarada_hoy'` (el front también reconoce mensajes con `limite`). Inserta `donacion_autodeclarada` server-side.
+5. **`registrar_evento(p_nombre text, p_props jsonb)`** con allowlist. El cliente manda: `machete_iniciado`, `pdf_descargado`, `limite_alcanzado`, `preferencia_mail_cambiada`, `donacion_cta_visto`, `donacion_abierta`, `donacion_alias_copiado`, `donacion_cvu_copiado`, `donacion_qr_mostrado` (props incluyen `plataforma`). `machete_enviado/estado/listo/error` y `donacion_autodeclarada` quedan server-side.
+6. **Donación (#10):** datos reales como defaults en `src/lib/config.ts` (alias `macheteo.donacion.mp`, titular Anderson Cavalcante Brayner; sin CVU ni QR → se ocultan). `NEXT_PUBLIC_DONACION_*` los pisan; `NEXT_PUBLIC_DONACION_ACTIVA=false` oculta todo.

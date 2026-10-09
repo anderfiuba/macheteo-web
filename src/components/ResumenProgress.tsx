@@ -3,10 +3,10 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, esErrorContenido, type EstadoResumen, type EstadoResumenDTO } from "@/lib/api";
-import { pedidoABorrador } from "@/lib/borrador";
+import { BORRADOR_KEY, pedidoABorrador } from "@/lib/borrador";
 import { LARGOS, TIPOS } from "@/lib/catalog";
 import { LineaDonar } from "@/components/donacion/Donacion";
-import { useUso } from "./UsoProvider";
+import { intentosRestantes, useUso } from "./UsoProvider";
 
 // GE-03: 4 pasos de la referencia. Mapeo: en_cola/generando → 1-2, armando → 3, listo → 4.
 const PASOS = ["Leímos tu guía", "Escribimos el contenido", "Diseñando las hojas", "Listo para descargar"];
@@ -16,7 +16,9 @@ export function ResumenProgress({ id }: { id: string }) {
   const [r, setR] = useState<EstadoResumenDTO | null | undefined>(undefined);
   const [offline, setOffline] = useState(false);
   const [ahora, setAhora] = useState(() => Date.now());
-  const { refrescar } = useUso();
+  const { uso, refrescar } = useUso();
+  const [accion, setAccion] = useState<"editar" | "reintentar" | null>(null);
+  const [errAccion, setErrAccion] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -57,6 +59,7 @@ export function ResumenProgress({ id }: { id: string }) {
 
   async function descargar() {
     const url = await api.getUrlDescarga(id);
+    api.registrarEvento("pdf_descargado", { resumen_id: id, es_redescarga: false });
     if (url) window.location.href = url;
     else alert("No pudimos descargar. Probá de nuevo. (En modo demo no hay PDF.)");
   }
@@ -67,11 +70,40 @@ export function ResumenProgress({ id }: { id: string }) {
   const enColaLargo = r.estado === "en_cola" && ahora - new Date(r.createdAt).getTime() > 30_000;
   const enCurso = r.estado !== "listo" && r.estado !== "error";
   // N-19: errores de contenido (tope_costo / render_timeout) cuentan como intento; los de plataforma no.
-  const errContenido = r.estado === "error" && esErrorContenido(r.errorCodigo);
-  const intentos = r.intentosRestantesHoy ?? 0;
-  function editarYReintentar() {
-    pedidoABorrador(id); // si no hay pedido guardado en este dispositivo, el form abre con el último borrador
+  const errContenido = r.estado === "error" && esErrorContenido(r);
+  // Intentos que quedan hoy = errores_usuario_limite − errores_usuario_hoy (obtener_uso). 3/día confirmado.
+  const intentos = uso ? intentosRestantes(uso) : 0;
+
+  /** N-19: precarga el formulario con los apuntes guardados server-side (PA-13, ≤ 7 días); fallback: copia local. */
+  async function editarYReintentar() {
+    setAccion("editar");
+    setErrAccion(null);
+    const p = await api.getPedido(id);
+    if (p) localStorage.setItem(BORRADOR_KEY, JSON.stringify(p));
+    else if (!pedidoABorrador(id)) {
+      setAccion(null);
+      setErrAccion("No encontramos tus apuntes de este machete. Volvé a pegarlos en Nuevo.");
+      return;
+    }
     router.push("/nuevo");
+  }
+
+  /** Error de plataforma: mismo pedido, job nuevo (reintentar_resumen vía /api/machetes). No cuenta para el límite. */
+  async function reintentar() {
+    setAccion("reintentar");
+    setErrAccion(null);
+    const res = await api.reintentarResumen(id, crypto.randomUUID());
+    if (res.ok) {
+      refrescar();
+      router.push(`/resumenes/${res.resumenId}`);
+      return;
+    }
+    setAccion(null);
+    if (res.error === "limite_activos") setErrAccion("Ya tenés un machete armándose. Esperá que termine para reintentar.");
+    else if (res.error === "limite_global") setErrAccion("Hoy Macheteo llegó a su límite. Volvé mañana.");
+    else if (res.error === "limite_diario") setErrAccion("Llegaste al límite de hoy. Mañana podés volver a probar.");
+    else if (res.error === "limite_errores") setErrAccion("Llegaste al máximo de intentos fallidos de hoy. Mañana podés volver a probar.");
+    else setErrAccion("No pudimos reintentar. Probá de nuevo en unos minutos.");
   }
 
   return (
@@ -137,13 +169,18 @@ export function ResumenProgress({ id }: { id: string }) {
           )}
         </div>
 
+        {errAccion && <p role="alert" className="mt-4 text-sm font-semibold text-tachon">ⓘ {errAccion}</p>}
         <div className="mt-5 flex flex-col gap-3 sm:flex-row">
           {r.estado === "listo" && <button onClick={descargar} className="h-12 flex-1 rounded-md bg-birome font-semibold text-white hover:bg-noche">⬇ Descargar PDF</button>}
           {errContenido && intentos > 0 && (
-            <button onClick={editarYReintentar} className="h-12 flex-1 rounded-md bg-birome font-semibold text-white hover:bg-noche">Editar y reintentar</button>
+            <button onClick={editarYReintentar} disabled={!!accion} className="h-12 flex-1 rounded-md bg-birome font-semibold text-white hover:bg-noche disabled:opacity-60">
+              {accion === "editar" ? "Cargando tus apuntes…" : "Editar y reintentar"}
+            </button>
           )}
           {r.estado === "error" && !errContenido && (
-            <button onClick={editarYReintentar} className="h-12 flex-1 rounded-md bg-birome font-semibold text-white hover:bg-noche">Reintentar</button>
+            <button onClick={reintentar} disabled={!!accion} className="h-12 flex-1 rounded-md bg-birome font-semibold text-white hover:bg-noche disabled:opacity-60">
+              {accion === "reintentar" ? "Reintentando…" : "Reintentar"}
+            </button>
           )}
           {r.estado === "listo" && <Link href="/nuevo" className="flex h-12 flex-1 items-center justify-center rounded-md border-[1.5px] border-birome font-semibold text-birome hover:bg-celeste">Armar otro</Link>}
           <Link href="/biblioteca" className="flex h-12 flex-1 items-center justify-center rounded-md border border-borde font-semibold hover:bg-celeste">Ir a la biblioteca</Link>
