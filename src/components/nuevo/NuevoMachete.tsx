@@ -173,6 +173,7 @@ export function NuevoMachete() {
     cuenta_inexistente: "Tu cuenta ya no existe. Cerrá sesión y volvé a registrarte.",
     no_autenticado: "Tu sesión venció. Volvé a entrar: tu texto queda guardado acá.",
     validacion: "Revisá el formulario: algo no pasó la validación.",
+    no_configurado: "Armar machetes no está disponible en este momento. Tu texto queda guardado; probá más tarde.",
     desconocido: "No pudimos arrancar tu machete. Revisá tu conexión y probá de nuevo.",
   };
   const label = "mb-2 block text-sm font-semibold";

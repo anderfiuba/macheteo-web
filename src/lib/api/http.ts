@@ -3,7 +3,7 @@ import type { CrearResumenInput, CrearResumenResult, ErrorCrear, PedidoGuardado 
 
 const ERRORES: ErrorCrear[] = [
   "email_no_verificado", "terminos_no_aceptados", "validacion", "limite_errores", "limite_activos",
-  "limite_diario", "limite_global", "cuenta_inexistente", "no_autenticado",
+  "limite_diario", "limite_global", "cuenta_inexistente", "no_autenticado", "no_configurado",
 ];
 
 async function postMachetes(body: Record<string, unknown>): Promise<CrearResumenResult> {

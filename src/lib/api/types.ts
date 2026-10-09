@@ -51,7 +51,7 @@ export interface CrearResumenInput {
 /** Errores exactos de crear_resumen / reintentar_resumen (+ los del route handler). */
 export type ErrorCrear =
   | "email_no_verificado" | "terminos_no_aceptados" | "validacion" | "limite_errores" | "limite_activos"
-  | "limite_diario" | "limite_global" | "cuenta_inexistente" | "no_autenticado" | "desconocido";
+  | "limite_diario" | "limite_global" | "cuenta_inexistente" | "no_autenticado" | "no_configurado" | "desconocido";
 
 export type CrearResumenResult =
   | { ok: true; resumenId: string }
