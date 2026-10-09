@@ -68,6 +68,8 @@ export function ResumenProgress({ id }: { id: string }) {
   const largo = LARGOS.find((l) => l.id === r.largo);
   const tipo = TIPOS.find((t) => t.id === r.tipo)?.nombre;
   const enColaLargo = r.estado === "en_cola" && ahora - new Date(r.createdAt).getTime() > 30_000;
+  // Si la cola no avanza (p. ej. worker caído), no seguir prometiendo "en breve".
+  const demorado = r.estado === "en_cola" && ahora - new Date(r.createdAt).getTime() > 5 * 60_000;
   const enCurso = r.estado !== "listo" && r.estado !== "error";
   // N-19: errores de contenido (tope_costo / render_timeout) cuentan como intento; los de plataforma no.
   const errContenido = r.estado === "error" && esErrorContenido(r);
@@ -141,8 +143,14 @@ export function ResumenProgress({ id }: { id: string }) {
         <div aria-live="polite" className="mt-5">
           {enCurso && (
             <p className="text-sm text-gastado">
-              {offline ? "Perdimos la conexión, reintentando…" : enColaLargo ? "Hay varios machetes en fila. El tuyo arranca en breve. " : ""}
-              Suele tardar un par de minutos. Podés cerrar la app: te avisamos por mail cuando esté.
+              {offline
+                ? "Perdimos la conexión, reintentando…"
+                : demorado
+                  ? "Está tardando más de lo normal. Tu machete sigue en la fila: podés cerrar la app y te avisamos por mail cuando esté."
+                  : enColaLargo
+                    ? "Hay varios machetes en fila. El tuyo arranca en breve. "
+                    : ""}
+              {!demorado && "Suele tardar un par de minutos. Podés cerrar la app: te avisamos por mail cuando esté."}
             </p>
           )}
           {r.estado === "listo" && (
