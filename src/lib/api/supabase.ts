@@ -8,7 +8,8 @@ import type { EstadoResumenDTO, MacheteoApi, Perfil, UsoDiario } from "./types";
  * Siempre select explícito: select=* falla por privilegios de columna.
  */
 const COLS_PERFIL = "nombre, email, nombre_en_hojas, hoja_default, tinta_default, avisar_email, acepto_terminos_at, version_terminos, email_verificado_at";
-const COLS_RESUMEN = "id, estado, progreso, tipo, extension, diseno, tinta, materia, opciones, hojas_max, paginas, error_codigo, error_origen, en_cola_at, listo_at, error_at, created_at";
+// `largo` es columna generada (= extension): no viene por Realtime, por eso siempre se lee por select.
+const COLS_RESUMEN = "id, estado, progreso, tipo, largo, extension, diseno, tinta, materia, opciones, hojas_max, paginas, error_codigo, error_origen, intentos_restantes_hoy, en_cola_at, listo_at, error_at, created_at";
 
 type PerfilRow = { nombre: string | null; email: string | null; nombre_en_hojas: string | null; hoja_default: string | null; tinta_default: string | null; avisar_email: boolean | null };
 const aPerfil = (r: PerfilRow | null, email: string | null): Perfil => ({
@@ -77,8 +78,9 @@ export const supabaseApi: MacheteoApi = {
     return {
       id: data.id, estado: data.estado, progreso: data.progreso ?? 0,
       materia: data.materia ?? (data.opciones as { materia?: string })?.materia ?? "",
-      tipo: data.tipo, largo: data.extension, hojaMax: data.hojas_max ?? null, paginas: data.paginas,
+      tipo: data.tipo, largo: data.largo ?? data.extension, hojaMax: data.hojas_max ?? null, paginas: data.paginas,
       createdAt: data.created_at, errorCodigo: data.error_codigo ?? null, errorOrigen: data.error_origen ?? null,
+      intentosRestantesHoy: data.intentos_restantes_hoy ?? null,
     } as EstadoResumenDTO;
   },
   async getUrlDescarga(id) {
@@ -94,7 +96,10 @@ export const supabaseApi: MacheteoApi = {
   },
   async registrarEvento(nombre, props = {}) {
     try {
-      await createClient().rpc("registrar_evento", { p_nombre: nombre, p_props: { plataforma: plataforma(), ...props } });
+      // Devuelve false si pasó el rate limit (300/día) y `validacion` si no está en la allowlist o props > 2 KB: se ignora en silencio.
+      const p_props = { plataforma: plataforma(), ...props };
+      if (JSON.stringify(p_props).length > 2000) return;
+      await createClient().rpc("registrar_evento", { p_nombre: nombre, p_props });
     } catch {
       /* fire-and-forget */
     }

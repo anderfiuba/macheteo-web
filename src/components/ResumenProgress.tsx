@@ -72,7 +72,7 @@ export function ResumenProgress({ id }: { id: string }) {
   // N-19: errores de contenido (tope_costo / render_timeout) cuentan como intento; los de plataforma no.
   const errContenido = r.estado === "error" && esErrorContenido(r);
   // Intentos que quedan hoy = errores_usuario_limite − errores_usuario_hoy (obtener_uso). 3/día confirmado.
-  const intentos = uso ? intentosRestantes(uso) : 0;
+  const intentos = uso ? intentosRestantes(uso) : (r.intentosRestantesHoy ?? 0);
 
   /** N-19: precarga el formulario con los apuntes guardados server-side (PA-13, ≤ 7 días); fallback: copia local. */
   async function editarYReintentar() {

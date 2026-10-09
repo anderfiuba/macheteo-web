@@ -38,4 +38,13 @@ Enums: `tipo` = `ejercicios | teoria | machete | autoevaluacion` · `extension` 
 5. **`registrar_evento(p_nombre, p_props)`** (allowlist + rate limit). Cliente: `machete_iniciado` (aceptado), `pdf_descargado`, `limite_alcanzado`, `preferencia_mail_cambiada`, `donacion_cta_visto`, `donacion_abierta`, `donacion_alias_copiado`, `donacion_cvu_copiado`, `donacion_qr_mostrado`. `machete_enviado/listo/error` y `donacion_autodeclarada` son server-side.
 6. **Donación (#10):** defaults reales en `src/lib/config.ts` (alias `macheteo.donacion.mp`, titular Anderson Cavalcante Brayner; sin CVU ni QR → ocultos). `NEXT_PUBLIC_DONACION_*` los pisan; `NEXT_PUBLIC_DONACION_ACTIVA=false` oculta todo.
 
-> Nota: `macheteo-backend/docs/contrato-frontend.md` (v3) todavía nombra `obtener_uso_diario`/`armar_machete`/`limite_hojas`; la migración aplicada usa los nombres de arriba (los del front). Pedir a Backend que actualice ese doc.
+**Contrato v4 (Backend, aplicado en `eqxijsigccdetocnklvj`):**
+- DETAIL de `limite_diario` = `{ vuelve_at, motivo: hojas|ip|ip_desconocida, hojas_restantes }`; `limite_global` y `limite_errores` = `{ vuelve_at }`. `obtener_uso` agrega `limite_global_vuelve_at`.
+- Estado (#4): el front lee además `largo` (columna generada; **no viene por Realtime**, el front hace polling con `select`) e `intentos_restantes_hoy` (foto al fallar; en vivo se usa `obtener_uso`).
+- `excede_hojas` (N-20) = error de **plataforma** → mensaje genérico + "Reintentar", no cuenta.
+- Descarga (#5): `url_descarga_resumen` devuelve la URL firmada con nombre `materia-tipo-AAAA-MM-DD.pdf` (slug sin tildes, fecha de creación ART), p. ej. `analisis-ii-teoria-2026-10-09.pdf`.
+- `registrar_evento` → `false` si pasó 300/día (se ignora en silencio); `validacion` si no está en la allowlist o props > 2 KB (el front no manda > 2 KB).
+- `obtener_pedido_resumen(p_id)` → `{ apuntes, instrucciones, tipo, extension, diseno, tinta, materia, opciones }`.
+- Auth: Google y SMTP todavía sin configurar. El botón de Google consulta `/auth/v1/settings` y, si está apagado, muestra "Entrar con Google todavía no está disponible. Usá tu email y contraseña." Si falla el envío del mail de verificación, el registro lo avisa en lugar de mandar a `/verificar`.
+
+> Nota: `macheteo-backend/docs/contrato-frontend.md` v4 ya está alineado con estos nombres.

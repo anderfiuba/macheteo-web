@@ -44,6 +44,17 @@ export function SignupForm() {
         setError("Probá de nuevo en unos minutos.");
         return;
       }
+      if (error && error.code === "email_address_invalid") {
+        setCargando(false);
+        setErrores({ email: "Ese email no parece válido. Revisalo." });
+        return;
+      }
+      if (error && (error.code === "email_address_not_authorized" || (/sending|email/i.test(error.message) && (error.status ?? 0) >= 500))) {
+        // SMTP sin configurar o caído: no mandar a /verificar prometiendo un mail que no salió.
+        setCargando(false);
+        setError("No pudimos mandarte el mail de verificación. Probá de nuevo en un rato.");
+        return;
+      }
       // Cualquier otro caso (incluido email ya registrado) → mensaje genérico en /verificar.
     }
     router.push(`/verificar?email=${encodeURIComponent(email)}`);

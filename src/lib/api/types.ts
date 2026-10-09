@@ -71,8 +71,11 @@ export interface EstadoResumenDTO {
   createdAt: string;
   errorCodigo: string | null;
   errorOrigen: "usuario" | "plataforma" | null;
+  /** Foto al fallar (N-19); en vivo se prefiere obtener_uso. */
+  intentosRestantesHoy?: number | null;
 }
 
+/** Códigos de plataforma conocidos (mensaje genérico, no cuentan): excede_hojas (N-20), worker_caido, llm_api_error, … */
 /** N-19: errores "de contenido" que cuentan como intento fallido (3/día). */
 export const ERRORES_CONTENIDO = ["tope_costo", "render_timeout"] as const;
 export const esErrorContenido = (r: Pick<EstadoResumenDTO, "errorCodigo" | "errorOrigen">) =>
