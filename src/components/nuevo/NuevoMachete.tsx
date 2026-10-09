@@ -1,6 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { CheckTerminos } from "@/components/auth/AceptarTerminos";
 import { api, type ErrorCrear } from "@/lib/api";
 import { BORRADOR_KEY, guardarPedido, limpiarBorrador } from "@/lib/borrador";
 import {
@@ -315,7 +316,9 @@ export function NuevoMachete() {
 
         {/* CTA */}
         <div className="sticky bottom-14 z-10 -mx-4 mt-8 border-t border-borde bg-hoja/95 px-4 py-4 backdrop-blur lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0">
-          {error && <p role="alert" className="mb-3 rounded-lg bg-tachon-bg px-4 py-2 text-sm font-semibold text-tachon">ⓘ {msgError[error.code]}</p>}
+          {error && error.code === "terminos_no_aceptados" ? (
+            <AceptarEnLinea onAceptado={() => { setError(null); void armar(); }} mensaje={msgError.terminos_no_aceptados} />
+          ) : error && <p role="alert" className="mb-3 rounded-lg bg-tachon-bg px-4 py-2 text-sm font-semibold text-tachon">ⓘ {msgError[error.code]}</p>}
           <div className="flex flex-col-reverse items-stretch gap-3 lg:flex-row lg:items-center lg:justify-between">
             <LineaDonar className="lg:text-left" />
             <button
@@ -397,5 +400,30 @@ function Campo({ id, label, value, onChange, error, ...rest }: { id: string; lab
       />
       {error && <span className="mt-1 block text-sm text-tachon">ⓘ {error}</span>}
     </label>
+  );
+}
+
+/** terminos_no_aceptados en S08: aceptar ahí mismo y volver a armar con el mismo pedido (misma idempotency key). */
+function AceptarEnLinea({ mensaje, onAceptado }: { mensaje: string; onAceptado: () => void }) {
+  const [acepto, setAcepto] = useState(false);
+  const [cargando, setCargando] = useState(false);
+  const [fallo, setFallo] = useState<string | null>(null);
+  async function aceptar() {
+    if (!acepto) return setFallo("Marcá la casilla para continuar.");
+    setCargando(true);
+    setFallo(null);
+    const ok = await api.aceptarTerminos();
+    setCargando(false);
+    if (ok) onAceptado();
+    else setFallo("No pudimos guardar tu aceptación. Probá de nuevo.");
+  }
+  return (
+    <div role="alert" className="mb-3 space-y-3 rounded-lg border border-tachon bg-tachon-bg px-4 py-3 text-sm">
+      <p className="font-semibold text-tachon">ⓘ {mensaje}</p>
+      <CheckTerminos checked={acepto} onChange={(v) => { setAcepto(v); if (v) setFallo(null); }} error={fallo} />
+      <button type="button" onClick={aceptar} disabled={cargando} className="h-11 w-full rounded-md bg-birome px-4 font-semibold text-white hover:bg-noche disabled:opacity-60 md:w-auto">
+        {cargando ? "Guardando…" : "Aceptar y armar mi machete"}
+      </button>
+    </div>
   );
 }

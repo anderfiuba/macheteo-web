@@ -128,6 +128,8 @@ export interface MacheteoApi {
   getUrlDescarga(id: string): Promise<string | null>;
   /** RPC declarar_donacion(p_monto?) — máx. 1 por día. */
   declararDonacion(monto?: number): Promise<DeclararDonacionResult>;
+  /** RPC aceptar_terminos(p_version): para Google y cuentas sin aceptación (terminos_no_aceptados). */
+  aceptarTerminos(): Promise<boolean>;
   /** CU-06 · POST /api/cuenta/eliminar { confirmacion: "ELIMINAR" }. Borra todo y cierra las sesiones. */
   eliminarCuenta(confirmacion: string): Promise<EliminarCuentaResult>;
   /** RPC registrar_evento(p_nombre, p_props). Nunca tira error. */

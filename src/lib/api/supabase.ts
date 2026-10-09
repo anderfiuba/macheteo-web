@@ -1,5 +1,6 @@
 "use client";
 import { createClient } from "@/lib/supabase/client";
+import { VERSION_TERMINOS } from "@/lib/config";
 import { crearViaRoute, eliminarCuentaViaRoute, pedidoViaRoute, reintentarViaRoute } from "./http";
 import type { EstadoResumenDTO, MacheteoApi, Perfil, UsoDiario } from "./types";
 
@@ -70,6 +71,10 @@ export const supabaseApi: MacheteoApi = {
     return Array.isArray(data) ? (data as string[]) : [];
   },
   crearResumen: crearViaRoute,
+  async aceptarTerminos() {
+    const { error } = await createClient().rpc("aceptar_terminos", { p_version: VERSION_TERMINOS });
+    return !error;
+  },
   eliminarCuenta: eliminarCuentaViaRoute,
   reintentarResumen: reintentarViaRoute,
   getPedido: pedidoViaRoute,

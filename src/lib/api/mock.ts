@@ -132,6 +132,7 @@ export const mockApi: MacheteoApi = {
     });
   },
   async getUrlDescarga() { await delay(200); return null; },
+  async aceptarTerminos() { await delay(300); return true; },
   async eliminarCuenta(confirmacion) {
     await delay(600);
     if (confirmacion.trim() !== "ELIMINAR") return { ok: false, error: "confirmacion_invalida" };

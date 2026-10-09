@@ -28,6 +28,13 @@ export async function GET(request: NextRequest) {
     const dest = type === "recovery" ? "/recuperar?estado=vencido" : "/verificar?estado=vencido";
     return NextResponse.redirect(`${origin}${dest}`);
   }
-  const dest = type === "recovery" ? "/recuperar/nueva" : safeNext;
+  if (type === "recovery") return NextResponse.redirect(`${origin}/recuperar/nueva`);
+  // Google (y cuentas sin aceptación): sin T&C aceptados no pueden armar → pantalla de aceptación antes de seguir.
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const { data: perfil } = await supabase.from("perfiles").select("acepto_terminos_at").eq("id", user.id).maybeSingle();
+    if (perfil && !perfil.acepto_terminos_at) return NextResponse.redirect(`${origin}/bienvenida?volver=${encodeURIComponent(safeNext)}`);
+  }
+  const dest = safeNext;
   return NextResponse.redirect(`${origin}${dest}`);
 }

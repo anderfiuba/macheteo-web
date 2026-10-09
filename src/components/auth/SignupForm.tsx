@@ -2,12 +2,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { isSupabaseConfigured, SITE_URL } from "@/lib/config";
+import { isSupabaseConfigured, SITE_URL, VERSION_TERMINOS } from "@/lib/config";
 import { createClient } from "@/lib/supabase/client";
 import { Aviso, Boton, Campo, InlineError, emailValido } from "./ui";
 import { GoogleButton, Separador } from "./GoogleButton";
 
-export const VERSION_TERMINOS = "2026-10";
 
 export function SignupForm() {
   const router = useRouter();
