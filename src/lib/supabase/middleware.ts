@@ -35,7 +35,8 @@ export async function updateSession(request: NextRequest) {
     url.searchParams.set("volver", path + request.nextUrl.search);
     return NextResponse.redirect(url);
   }
-  if (user && AUTH_ONLY_GUEST.some((p) => path.startsWith(p))) {
+  if (user && (path === "/" || AUTH_ONLY_GUEST.some((p) => path.startsWith(p)))) {
+    // Con sesión, la landing y las pantallas de invitado llevan a la app.
     const url = request.nextUrl.clone();
     url.pathname = HOME_LOGUEADO;
     url.search = "";

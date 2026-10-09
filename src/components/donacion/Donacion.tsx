@@ -4,7 +4,7 @@ import { api } from "@/lib/api";
 import { DONACION, DONACION_ACTIVA } from "@/lib/config";
 import { useToast } from "@/components/Toast";
 
-async function copiarTexto(texto: string) {
+export async function copiarTexto(texto: string) {
   try {
     await navigator.clipboard.writeText(texto);
     return true;

@@ -5,7 +5,7 @@ export const PRODUCTION_URL = "https://macheteo-web.vercel.app";
 /** URL del entorno actual (redirects de email/OAuth). Local: NEXT_PUBLIC_SITE_URL=http://localhost:3000 en .env.local. */
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || PRODUCTION_URL;
 /** Rutas públicas indexables (el resto requiere sesión o es transitorio). */
-export const RUTAS_PUBLICAS = ["/registro", "/ingresar", "/terminos", "/privacidad"] as const;
+export const RUTAS_PUBLICAS = ["/", "/registro", "/ingresar", "/terminos", "/privacidad"] as const;
 export const API_MODE: "mock" | "supabase" =
   process.env.NEXT_PUBLIC_API_MODE === "supabase" ? "supabase" : "mock";
 
@@ -27,3 +27,8 @@ export const DONACION = {
 };
 export const DONACION_ACTIVA =
   process.env.NEXT_PUBLIC_DONACION_ACTIVA !== "false" && Boolean(DONACION.alias || DONACION.cvu || DONACION.qrUrl);
+
+/** Contacto (footer, letra chica de donación). Vacío = placeholder pendiente de PM: se ocultan los textos que lo usan. */
+export const CONTACTO_EMAIL = (process.env.NEXT_PUBLIC_CONTACTO_EMAIL ?? "").trim();
+/** Link obligatorio de Defensa del Consumidor (Res. SCI 274/2021 art. 8). */
+export const DEFENSA_CONSUMIDOR_URL = "https://www.argentina.gob.ar/produccion/defensadelconsumidor/formulario";
