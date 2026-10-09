@@ -71,7 +71,7 @@ export function ResumenProgress({ id }: { id: string }) {
   // Si la cola no avanza (p. ej. worker caído), no seguir prometiendo "en breve".
   const demorado = r.estado === "en_cola" && ahora - new Date(r.createdAt).getTime() > 5 * 60_000;
   const enCurso = r.estado !== "listo" && r.estado !== "error";
-  // N-19: errores de contenido (tope_costo / render_timeout) cuentan como intento; los de plataforma no.
+  // N-19: errores de contenido (error_origen=usuario: tope_costo, timeouts) cuentan como intento; los de plataforma no.
   const errContenido = r.estado === "error" && esErrorContenido(r);
   // Intentos que quedan hoy = errores_usuario_limite − errores_usuario_hoy (obtener_uso). 3/día confirmado.
   const intentos = uso ? intentosRestantes(uso) : (r.intentosRestantesHoy ?? 0);

@@ -76,10 +76,13 @@ export interface EstadoResumenDTO {
 }
 
 /** Códigos de plataforma conocidos (mensaje genérico, no cuentan): excede_hojas (N-20), worker_caido, llm_api_error, … */
-/** N-19: errores "de contenido" que cuentan como intento fallido (3/día). */
-export const ERRORES_CONTENIDO = ["tope_costo", "render_timeout"] as const;
+/** N-19: errores "de contenido" que cuentan como intento fallido (3/día). Los timeouts cuentan (PM 09/10). */
+export const ERRORES_CONTENIDO = ["tope_costo", "render_timeout", "timeout_duracion"] as const;
+/** error_origen manda (lo decide el backend, que es quien cuenta el intento); la lista de códigos es solo el fallback si viene vacío. */
 export const esErrorContenido = (r: Pick<EstadoResumenDTO, "errorCodigo" | "errorOrigen">) =>
-  r.errorOrigen === "usuario" || (!!r.errorCodigo && (ERRORES_CONTENIDO as readonly string[]).includes(r.errorCodigo));
+  r.errorOrigen
+    ? r.errorOrigen === "usuario"
+    : !!r.errorCodigo && (ERRORES_CONTENIDO as readonly string[]).includes(r.errorCodigo);
 
 /** Lo que se precarga en "Editar y reintentar" (apuntes guardados server-side hasta 7 días en error, PA-13). */
 export interface PedidoGuardado {

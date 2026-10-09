@@ -6,8 +6,9 @@ export const PRODUCTION_URL = "https://macheteo-web.vercel.app";
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || PRODUCTION_URL;
 /** Rutas públicas indexables (el resto requiere sesión o es transitorio). */
 export const RUTAS_PUBLICAS = ["/", "/registro", "/ingresar", "/terminos", "/privacidad"] as const;
-export const API_MODE: "mock" | "supabase" =
-  process.env.NEXT_PUBLIC_API_MODE === "supabase" ? "supabase" : "mock";
+/** "supabase" o su alias "real" (como lo llama PM) = backend real; cualquier otro valor = mock. */
+const MODO = (process.env.NEXT_PUBLIC_API_MODE ?? "").trim().toLowerCase();
+export const API_MODE: "mock" | "supabase" = MODO === "supabase" || MODO === "real" ? "supabase" : "mock";
 
 /** Sin env vars de Supabase la app corre en "modo demo" (sin auth real). */
 export const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
