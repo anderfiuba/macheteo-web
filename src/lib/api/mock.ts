@@ -50,6 +50,8 @@ function estadoDe(r: MockResumen, s: MockState): EstadoResumenDTO {
     creditosCobrados: estado === "listo" ? cobrados : null,
     creditosDevueltos: estado === "listo" ? r.reservados - cobrados : null,
     paginas: estado === "listo" ? paginas : null,
+    posicionCola: estado === "en_cola" ? 3 : null,
+    errorCodigo: null,
   };
 }
 
@@ -58,8 +60,12 @@ export const mockApi: MacheteoApi = {
     await delay(150);
     const s = load();
     Object.values(s.resumenes).forEach((r) => estadoDe(r, s));
-    const vence = new Date(Date.now() + 20 * 864e5).toISOString();
-    return { saldo: load().saldo, porVencer: { cantidad: 2, venceAt: vence }, emailVerificado: true };
+    const st = load();
+    const reservados = Object.values(st.resumenes)
+      .filter((r) => !(r as MockResumen & { liquidado?: boolean }).liquidado)
+      .reduce((a, r) => a + r.reservados, 0);
+    // C11: vencimiento oculto hasta que exista el dato (CR-07) → null en mock
+    return { saldo: st.saldo, reservados, porVencer: null, emailVerificado: true };
   },
   async getCostos() {
     await delay(100);
@@ -90,5 +96,11 @@ export const mockApi: MacheteoApi = {
   async getUrlDescarga() {
     await delay(200);
     return null; // sin PDF real en modo mock
+  },
+  async solicitarArrepentimiento(input) {
+    await delay(500);
+    if (!input.email.includes("@") || input.referenciaPago.trim().length < 3) return { ok: false, error: "validacion" };
+    const n = Math.floor(Math.random() * 900000 + 100000);
+    return { ok: true, numero: `ARR-${new Date().getFullYear()}-${n}`, creadaAt: new Date().toISOString() };
   },
 };

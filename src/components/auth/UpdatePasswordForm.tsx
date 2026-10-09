@@ -26,11 +26,11 @@ export function UpdatePasswordForm() {
       const { error } = await supabase.auth.updateUser({ password: p1 });
       if (error) {
         setCargando(false);
-        return setError("No pudimos cambiar la contraseña. Pedí un link nuevo.");
+        return setError("El link venció o ya se usó. Pedí uno nuevo desde “¿Te olvidaste la contraseña?”.");
       }
       await supabase.auth.signOut({ scope: "others" }); // cierra las otras sesiones (CU-04)
     }
-    router.push("/nuevo");
+    router.push("/ingresar?estado=contrasena_actualizada");
     router.refresh();
   }
 

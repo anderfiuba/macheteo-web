@@ -4,7 +4,7 @@ import { isSupabaseConfigured, SITE_URL } from "@/lib/config";
 import { createClient } from "@/lib/supabase/client";
 import { Aviso, Boton, Campo, emailValido } from "./ui";
 
-export function RecoverForm() {
+export function RecoverForm({ vencido }: { vencido?: boolean }) {
   const [email, setEmail] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
@@ -25,7 +25,8 @@ export function RecoverForm() {
   if (enviado) return <Aviso tipo="ok">Si hay una cuenta con ese email, te mandamos un link para crear una contraseña nueva. Vence en 1 hora.</Aviso>;
   return (
     <form onSubmit={onSubmit} noValidate>
-      <p className="mb-3 text-sm text-slate-600">Escribí tu email y te mandamos un link para crear una contraseña nueva.</p>
+      {vencido && <Aviso tipo="warning">El link venció o ya se usó. Pedí uno nuevo.</Aviso>}
+      <p className="mb-5 text-sm text-ink-muted">Escribí tu email y te mandamos un link para crear una contraseña nueva.</p>
       <Campo id="email" label="Email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} error={err} />
       <Boton type="submit" cargando={cargando}>Mandarme el link</Boton>
     </form>

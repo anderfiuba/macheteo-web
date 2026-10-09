@@ -9,5 +9,6 @@ npm install && npm run dev
 
 - `src/lib/api/` — interfaz `MacheteoApi` con `mockApi` (localStorage) y `supabaseApi` (RPC propuestas). Se elige con `NEXT_PUBLIC_API_MODE`.
 - `src/lib/supabase/` — clientes browser/server + refresco de sesión en `src/middleware.ts` (protege `/nuevo`, `/resumenes`, etc.).
-- Rutas: `/`, `/registro`, `/ingresar`, `/recuperar`, `/actualizar-contrasena`, `/auth/callback`, `/nuevo` (wizard 5 pasos), `/resumenes/[id]` (progreso), placeholders `/historial`, `/creditos`, `/biblioteca`.
+- Rutas (alineadas a flows.md): `/`, `/registro`, `/verificar`, `/ingresar`, `/recuperar`, `/recuperar/nueva`, `/auth/callback`, `/biblioteca` (home logueada), `/nuevo?paso=1..5`, `/resumenes/[id]`, `/creditos`, `/creditos/historial`, `/cuenta`, `/terminos`, `/privacidad`, `/arrepentimiento`.
+- Tokens de diseño: `src/app/globals.css` (de `/workspace/macheteo-design/design-tokens.md`); fuentes Inter + Kalam (`next/font`).
 - Contrato con Backend: `docs/endpoints-backend.md`.

@@ -1,10 +1,57 @@
 @import "tailwindcss";
 
-@theme inline {
-  --font-sans: var(--font-inter), system-ui, sans-serif;
-  --font-hand: var(--font-caveat), "Comic Sans MS", cursive;
+/* Design tokens v0 — /workspace/macheteo-design/design-tokens.md */
+:root {
+  --color-paper: #FBF8F1; --color-surface: #FFFFFF; --color-surface-alt: #F3EFE6;
+  --color-border: #E2DCCF; --color-border-strong: #B9B1A1;
+  --color-ink: #1E2235; --color-ink-muted: #6B6558;
+  --color-primary: #2B4ACB; --color-primary-hover: #223BA6; --color-primary-soft: #E6EBFB;
+  --color-highlight: #FFE45C;
+  --color-success: #1E7A46; --color-success-bg: #E3F4EA;
+  --color-warning: #8A5A00; --color-warning-bg: #FFF3D6;
+  --color-danger: #B3261E; --color-danger-bg: #FCE8E6;
+  --font-ui: var(--font-inter), Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-hand-stack: var(--font-kalam), Kalam, "Patrick Hand", cursive;
+  --shadow-1: 0 1px 2px rgba(30, 34, 53, .08); --shadow-2: 0 8px 24px rgba(30, 34, 53, .14);
 }
 
-.font-hand {
-  font-family: var(--font-hand);
+@theme inline {
+  --color-paper: var(--color-paper);
+  --color-surface: var(--color-surface);
+  --color-surface-alt: var(--color-surface-alt);
+  --color-border: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
+  --color-ink: var(--color-ink);
+  --color-ink-muted: var(--color-ink-muted);
+  --color-primary: var(--color-primary);
+  --color-primary-hover: var(--color-primary-hover);
+  --color-primary-soft: var(--color-primary-soft);
+  --color-highlight: var(--color-highlight);
+  --color-success: var(--color-success);
+  --color-success-bg: var(--color-success-bg);
+  --color-warning: var(--color-warning);
+  --color-warning-bg: var(--color-warning-bg);
+  --color-danger: var(--color-danger);
+  --color-danger-bg: var(--color-danger-bg);
+  --color-info: var(--color-primary);
+  --color-info-bg: var(--color-primary-soft);
+  --font-sans: var(--font-ui);
+  --font-hand: var(--font-hand-stack);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --shadow-1: var(--shadow-1);
+  --shadow-2: var(--shadow-2);
+  --breakpoint-sm: 360px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+}
+
+body { background: var(--color-paper); color: var(--color-ink); }
+.font-hand { font-family: var(--font-hand-stack); font-weight: 700; }
+.tnum { font-feature-settings: "tnum"; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
 }

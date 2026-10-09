@@ -2,7 +2,10 @@ import type { ColorBirome, ColorResaltador, Diseno, Extension, TipoResumen } fro
 
 /** GET saldo — CR-01 */
 export interface Saldo {
+  /** Disponible (SUM del ledger, con reservas ya descontadas) */
   saldo: number;
+  /** Créditos reservados por resúmenes en curso (D4: segunda línea del badge) */
+  reservados: number;
   /** Créditos que vencen en ≤30 días (null si no hay) */
   porVencer: { cantidad: number; venceAt: string } | null;
   emailVerificado: boolean;
@@ -52,7 +55,21 @@ export interface EstadoResumenDTO {
   creditosCobrados: number | null;
   creditosDevueltos: number | null;
   paginas: number | null;
+  /** "Hay N antes que vos" (opcional, si Backend lo expone) */
+  posicionCola?: number | null;
+  /** Código corto para soporte, nunca stack (ej. GEN-TIMEOUT) */
+  errorCodigo?: string | null;
 }
+
+/** Botón de arrepentimiento — Res. SCI 424/2020 */
+export interface SolicitudArrepentimientoInput {
+  email: string;
+  referenciaPago: string;
+  motivo?: string;
+}
+export type SolicitudArrepentimientoResult =
+  | { ok: true; numero: string; creadaAt: string }
+  | { ok: false; error: "validacion" | "rate_limit" | "desconocido" };
 
 export interface MacheteoApi {
   getSaldo(): Promise<Saldo>;
@@ -61,4 +78,6 @@ export interface MacheteoApi {
   getEstadoResumen(id: string): Promise<EstadoResumenDTO | null>;
   /** URL firmada (5 min) — BI-02 */
   getUrlDescarga(id: string): Promise<string | null>;
+  /** Público (sin login). Procesamiento manual. */
+  solicitarArrepentimiento(input: SolicitudArrepentimientoInput): Promise<SolicitudArrepentimientoResult>;
 }

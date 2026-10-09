@@ -16,13 +16,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <BalanceProvider>
       {!isSupabaseConfigured && (
-        <div className="bg-yellow-100 px-4 py-1 text-center text-xs text-yellow-900">
+        <div className="bg-warning-bg px-4 py-1 text-center text-xs text-warning">
           Modo demo: sin Supabase configurado, datos simulados.
         </div>
       )}
       <Header email={email} />
       <VerifyBanner email={email} verificado={verificado} />
-      <main className="mx-auto max-w-4xl px-4 py-6">{children}</main>
+      <main className="mx-auto max-w-[1120px] px-4 py-6 lg:px-10 lg:py-8">{children}</main>
     </BalanceProvider>
   );
 }

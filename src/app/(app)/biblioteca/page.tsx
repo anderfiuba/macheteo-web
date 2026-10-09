@@ -1,11 +1,13 @@
-import Link from "next/link";
+import { EmptyState } from "@/components/EmptyState";
 
+export const metadata = { title: "Mi biblioteca · Macheteo" };
+
+// S07 — listado real en semana 3 (BI-01). Por ahora, empty state.
 export default function Page() {
   return (
-    <div className="rounded-xl border border-dashed p-8 text-center">
-      <h1 className="text-xl font-bold">Mis resúmenes</h1>
-      <p className="mt-2 text-slate-600">Tus resúmenes y re-descargas gratis. Llega en la semana 3.</p>
-      <Link href="/nuevo" className="mt-4 inline-block font-semibold text-blue-700 underline">Crear un resumen</Link>
-    </div>
+    <>
+      <h1 className="mb-6 text-[22px] font-bold lg:text-2xl">Mi biblioteca</h1>
+      <EmptyState titulo="Todavía no tenés resúmenes" cta={{ href: "/nuevo", label: "Crear mi primer resumen" }} />
+    </>
   );
 }

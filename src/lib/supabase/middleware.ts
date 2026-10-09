@@ -2,8 +2,9 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, isSupabaseConfigured } from "@/lib/config";
 
-const PROTECTED = ["/nuevo", "/resumenes", "/historial", "/creditos", "/biblioteca", "/actualizar-contrasena"];
-const AUTH_ONLY_GUEST = ["/ingresar", "/registro", "/recuperar"];
+const PROTECTED = ["/nuevo", "/resumenes", "/creditos", "/biblioteca", "/cuenta", "/recuperar/nueva"];
+const AUTH_ONLY_GUEST = ["/ingresar", "/registro"];
+const HOME_LOGUEADO = "/biblioteca"; // D3
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -30,12 +31,13 @@ export async function updateSession(request: NextRequest) {
   if (!user && PROTECTED.some((p) => path.startsWith(p))) {
     const url = request.nextUrl.clone();
     url.pathname = "/ingresar";
-    url.searchParams.set("next", path);
+    url.search = "";
+    url.searchParams.set("volver", path + request.nextUrl.search);
     return NextResponse.redirect(url);
   }
   if (user && AUTH_ONLY_GUEST.some((p) => path.startsWith(p))) {
     const url = request.nextUrl.clone();
-    url.pathname = "/nuevo";
+    url.pathname = HOME_LOGUEADO;
     url.search = "";
     return NextResponse.redirect(url);
   }

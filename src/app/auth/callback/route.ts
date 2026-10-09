@@ -9,10 +9,10 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const tokenHash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
-  const next = searchParams.get("next") ?? "/nuevo";
-  const safeNext = next.startsWith("/") ? next : "/nuevo";
+  const volver = searchParams.get("volver") ?? "/biblioteca";
+  const safeNext = volver.startsWith("/") && !volver.startsWith("//") ? volver : "/biblioteca";
 
-  if (!isSupabaseConfigured) return NextResponse.redirect(`${origin}/ingresar`);
+  if (!isSupabaseConfigured) return NextResponse.redirect(`${origin}/ingresar`); // modo demo
   const supabase = await createClient();
   let error: unknown = null;
   if (code) {
@@ -24,8 +24,10 @@ export async function GET(request: NextRequest) {
   }
 
   if (error) {
-    return NextResponse.redirect(`${origin}/ingresar?error=link_vencido`);
+    // S03 / S04: link vencido o ya usado
+    const dest = type === "recovery" ? "/recuperar?estado=vencido" : "/verificar?estado=vencido";
+    return NextResponse.redirect(`${origin}${dest}`);
   }
-  const dest = type === "recovery" ? "/actualizar-contrasena" : safeNext;
+  const dest = type === "recovery" ? "/recuperar/nueva" : safeNext;
   return NextResponse.redirect(`${origin}${dest}`);
 }

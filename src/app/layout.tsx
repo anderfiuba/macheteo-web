@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { Caveat, Inter } from "next/font/google";
+import { Inter, Kalam } from "next/font/google";
+import { SiteFooter } from "@/components/SiteFooter";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const caveat = Caveat({ subsets: ["latin"], variable: "--font-caveat" });
+const kalam = Kalam({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-kalam" });
 
 export const metadata: Metadata = {
   title: "Macheteo · Tus apuntes, hechos machete",
@@ -13,7 +14,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es-AR">
-      <body className={`${inter.variable} ${caveat.variable} min-h-screen bg-slate-50 font-sans text-slate-900 antialiased`}>{children}</body>
+      <body className={`${inter.variable} ${kalam.variable} flex min-h-screen flex-col bg-paper font-sans text-ink antialiased`}>
+        <div className="flex-1">{children}</div>
+        <SiteFooter />
+      </body>
     </html>
   );
 }
