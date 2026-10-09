@@ -23,4 +23,5 @@ export const NAV = [
   ["Es gratis", "#es-gratis"],
   ["Preguntas", "#preguntas"],
 ] as const;
-export const EJEMPLO_PDF = "/ejemplo/macheteo-ejemplo-analisis-i-derivadas.pdf";
+export const EJEMPLO_PDF = "/ejemplo/macheteo-ejemplo-analisis-ii.pdf";
+export const EJEMPLO_P1 = "/ejemplo/macheteo-ejemplo-analisis-ii-p1.webp";
