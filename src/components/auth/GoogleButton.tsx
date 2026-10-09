@@ -26,7 +26,7 @@ export function GoogleButton({ volver = "/nuevo" }: { volver?: string }) {
     // Sin esto, con el proveedor apagado Supabase muestra un JSON crudo ("provider is not enabled").
     if (!(await googleHabilitado())) {
       setCargando(false);
-      return setError("Entrar con Google todavía no está disponible. Usá tu email y contraseña.");
+      return setError("Entrar con Google no está disponible en este momento. Probá más tarde.");
     }
     const { error: e } = await createClient().auth.signInWithOAuth({
       provider: "google",
@@ -34,23 +34,16 @@ export function GoogleButton({ volver = "/nuevo" }: { volver?: string }) {
     });
     if (e) {
       setCargando(false);
-      setError("No pudimos conectar con Google. Probá de nuevo o usá tu email.");
+      setError("No pudimos conectar con Google. Probá de nuevo.");
     }
   }
   return (
     <div>
-      <Boton type="button" variante="secundario" onClick={entrar} disabled={cargando}>
-        {cargando ? "Conectando…" : "Seguir con Google"}
+      <Boton type="button" onClick={entrar} disabled={cargando}>
+        {cargando ? "Conectando…" : "Continuar con Google"}
       </Boton>
       {error && <div role="alert" className="mt-2"><InlineError>{error}</InlineError></div>}
     </div>
   );
 }
 
-export function Separador() {
-  return (
-    <div className="my-5 flex items-center gap-3 text-xs text-gastado">
-      <span className="h-px flex-1 bg-borde" />o<span className="h-px flex-1 bg-borde" />
-    </div>
-  );
-}

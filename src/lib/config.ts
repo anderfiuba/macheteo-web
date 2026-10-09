@@ -38,5 +38,8 @@ export const DEFENSA_CONSUMIDOR_URL = "https://www.argentina.gob.ar/produccion/d
 /** CU-06 · Palabra que hay que escribir para eliminar la cuenta (se ignoran espacios al borde, mayúsculas exactas). */
 export const PALABRA_CONFIRMACION_BAJA = "ELIMINAR";
 
-/** Versión de T&C/Privacidad que se acepta (registro por email: metadata del signup; Google y cuentas viejas: RPC aceptar_terminos). */
+/** Versión de T&C/Privacidad que se acepta (se guarda con la RPC aceptar_terminos en /bienvenida o en línea en Nuevo). */
 export const VERSION_TERMINOS = "2026-10";
+
+/** Toggle "Avisarme por mail cuando esté listo" en Perfil. Oculto hasta que el mail de aviso funcione (dominio de Resend). */
+export const MOSTRAR_AVISO_EMAIL = process.env.NEXT_PUBLIC_MOSTRAR_AVISO_EMAIL === "true";

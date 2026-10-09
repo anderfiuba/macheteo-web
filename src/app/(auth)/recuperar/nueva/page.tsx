@@ -1,12 +1,6 @@
-import { AuthCard } from "@/components/auth/ui";
-import { UpdatePasswordForm } from "@/components/auth/UpdatePasswordForm";
+import { redirect } from "next/navigation";
 
-export const metadata = { title: "Nueva contraseña · Macheteo" };
-
+// Ingreso solo con Google: no hay contraseñas que recuperar.
 export default function Page() {
-  return (
-    <AuthCard titulo="Creá una contraseña nueva">
-      <UpdatePasswordForm />
-    </AuthCard>
-  );
+  redirect("/ingresar");
 }

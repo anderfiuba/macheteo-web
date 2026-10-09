@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api, type Perfil } from "@/lib/api";
 import { HOJAS, LIMITES, TINTAS, type Hoja, type Tinta } from "@/lib/catalog";
+import { MOSTRAR_AVISO_EMAIL } from "@/lib/config";
 import { cerrarSesion } from "@/lib/sesion";
 import { FilaDonar } from "@/components/donacion/Donacion";
 import { EliminarCuenta } from "@/components/EliminarCuenta";
@@ -76,18 +77,22 @@ export function PerfilView() {
         </label>
       </section>
 
+      {MOSTRAR_AVISO_EMAIL && (
       <section>
         <h2 className="text-sm font-semibold" style={{ fontFamily: "inherit", color: "var(--azul-gastado)" }}>Cuenta</h2>
-        <div className={fila}>
-          <span id="avisar-label">Avisarme por mail cuando esté listo</span>
-          <button
-            type="button" role="switch" aria-checked={p.avisarEmail} aria-labelledby="avisar-label" onClick={() => { guardar({ avisarEmail: !p.avisarEmail }); api.registrarEvento("preferencia_mail_cambiada", { valor: !p.avisarEmail }); }}
-            className={`relative h-7 w-12 rounded-full transition ${p.avisarEmail ? "bg-birome" : "bg-borde-fuerte"}`}
-          >
-            <span className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-all ${p.avisarEmail ? "left-6" : "left-1"}`} />
-          </button>
-        </div>
+        {(
+          <div className={fila}>
+            <span id="avisar-label">Avisarme por mail cuando esté listo</span>
+            <button
+              type="button" role="switch" aria-checked={p.avisarEmail} aria-labelledby="avisar-label" onClick={() => { guardar({ avisarEmail: !p.avisarEmail }); api.registrarEvento("preferencia_mail_cambiada", { valor: !p.avisarEmail }); }}
+              className={`relative h-7 w-12 rounded-full transition ${p.avisarEmail ? "bg-birome" : "bg-borde-fuerte"}`}
+            >
+              <span className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-all ${p.avisarEmail ? "left-6" : "left-1"}`} />
+            </button>
+          </div>
+        )}
       </section>
+      )}
 
       <FilaDonar />
 

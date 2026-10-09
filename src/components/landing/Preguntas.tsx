@@ -42,6 +42,7 @@ const ITEMS: Item[] = [
   ...(DONACION_ACTIVA
     ? [{ q: "¿Cómo dono?", a: <>Transferís al alias de Mercado Pago que está en tu perfil o acá abajo. Sin mínimo ni máximo.<LineaAlias /></> }]
     : []),
+  { q: "¿Cómo creo mi cuenta?", a: "Con tu cuenta de Google, en un clic. No tenés que inventar otra contraseña." },
   { q: "¿Sirve para cualquier materia?", a: "Sí: programación, derecho, medicina, economía o historia. Las fórmulas salen bien escritas." },
   { q: "¿Y si la IA se equivoca?", a: "Puede pasar. Cada PDF lo avisa al final: revisalo con el material de tu cátedra." },
   // LG3 decía "2 armándose a la vez"; el límite real (PA-16) es 1 en curso.

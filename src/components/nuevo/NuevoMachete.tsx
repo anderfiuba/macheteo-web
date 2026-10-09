@@ -169,7 +169,7 @@ export function NuevoMachete() {
     limite_activos: "Ya tenés un machete armándose. Esperá que termine para armar otro.",
     limite_errores: "Llegaste al máximo de intentos fallidos de hoy. Mañana podés volver a probar.",
     limite_global: `Hoy se armaron tantos machetes que Macheteo llegó a su límite del día. ${cuandoVuelve(error?.vuelve ?? null)} podés volver a armar; tus apuntes quedan guardados.`,
-    email_no_verificado: "Verificá tu email para armar tu machete. Te mandamos el link cuando te registraste.",
+    email_no_verificado: "Tu cuenta no tiene el email verificado. Cerrá sesión y volvé a entrar con Google.",
     terminos_no_aceptados: "Para armar tu machete tenés que aceptar los Términos y la Política de Privacidad.",
     cuenta_inexistente: "Tu cuenta ya no existe. Cerrá sesión y volvé a registrarte.",
     no_autenticado: "Tu sesión venció. Volvé a entrar: tu texto queda guardado acá.",

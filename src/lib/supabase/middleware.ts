@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, isSupabaseConfigured } from "@/lib/config";
 
-const PROTECTED = ["/nuevo", "/resumenes", "/biblioteca", "/perfil", "/recuperar/nueva"];
+const PROTECTED = ["/nuevo", "/resumenes", "/biblioteca", "/perfil"];
 const AUTH_ONLY_GUEST = ["/ingresar", "/registro"];
 /** Pantallas de la app que exigen T&C aceptados (Google y cuentas viejas no pasan por el checkbox del registro). */
 const REQUIERE_TYC = ["/nuevo", "/resumenes", "/biblioteca", "/perfil"];

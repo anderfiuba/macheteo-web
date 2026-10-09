@@ -147,11 +147,11 @@ export function ResumenProgress({ id }: { id: string }) {
               {offline
                 ? "Perdimos la conexión, reintentando…"
                 : demorado
-                  ? "Está tardando más de lo normal. Tu machete sigue en la fila: podés cerrar la app y te avisamos por mail cuando esté."
+                  ? "Está tardando más de lo normal. Tu machete sigue en la fila: podés cerrar la app y cuando esté listo lo vas a encontrar en tu Biblioteca."
                   : enColaLargo
                     ? "Hay varios machetes en fila. El tuyo arranca en breve. "
                     : ""}
-              {!demorado && "Suele tardar un par de minutos. Podés cerrar la app: te avisamos por mail cuando esté."}
+              {!demorado && "Suele tardar un par de minutos. Podés cerrar la app: cuando esté listo lo vas a encontrar en tu Biblioteca."}
             </p>
           )}
           {r.estado === "listo" && (
