@@ -29,7 +29,8 @@ export const DONACION = {
 export const DONACION_ACTIVA =
   process.env.NEXT_PUBLIC_DONACION_ACTIVA !== "false" && Boolean(DONACION.alias || DONACION.cvu || DONACION.qrUrl);
 
-/** Contacto (footer, letra chica de donación). Vacío = placeholder pendiente de PM: se ocultan los textos que lo usan. */
-export const CONTACTO_EMAIL = (process.env.NEXT_PUBLIC_CONTACTO_EMAIL ?? "").trim();
+/** Contacto público (footer, menú, letra chica de donación, páginas legales). */
+export const CONTACTO_EMAIL = "andersonbrayner.dev@gmail.com";
+export const UBICACION = "Capital Federal, Argentina";
 /** Link obligatorio de Defensa del Consumidor (Res. SCI 274/2021 art. 8). */
 export const DEFENSA_CONSUMIDOR_URL = "https://www.argentina.gob.ar/produccion/defensadelconsumidor/formulario";

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
-import { CONTACTO_EMAIL, DEFENSA_CONSUMIDOR_URL } from "@/lib/config";
+import { CONTACTO_EMAIL, DEFENSA_CONSUMIDOR_URL, UBICACION } from "@/lib/config";
 
-/** Footer de la landing y de 404 (L03/L05, LG4). Razón social, CUIT y domicilio quedan fuera hasta que PM los pase. */
+/** Footer de la landing (L03, LG4). */
 export function FooterLegal() {
   return (
     <footer className="mx-auto max-w-[1180px] px-5 pb-24 pt-5 text-[12.5px] text-gastado lg:px-16 lg:pb-5">
@@ -12,9 +12,7 @@ export function FooterLegal() {
         <nav aria-label="Enlaces legales" className="flex flex-wrap gap-4 lg:ml-auto">
           <Link href="/terminos" className="link-garabato">Términos y condiciones</Link>
           <Link href="/privacidad" className="link-garabato">Privacidad</Link>
-          {CONTACTO_EMAIL && (
-            <a href={`mailto:${CONTACTO_EMAIL}`} aria-label={`Contacto: escribinos a ${CONTACTO_EMAIL}`} className="link-garabato">Contacto</a>
-          )}
+          <a href={`mailto:${CONTACTO_EMAIL}`} aria-label={`Contacto: escribinos a ${CONTACTO_EMAIL}`} className="link-garabato">Contacto</a>
         </nav>
       </div>
       <p className="mt-3">
@@ -29,7 +27,7 @@ export function FooterLegal() {
           ingrese aquí ↗
         </a>
       </p>
-      <p className="mt-1 text-[11px]">Macheteo es para estudiar: respetá las reglas de tu cátedra. Los machetes se arman con IA y pueden tener errores.</p>
+      <p className="mt-1 text-[11px]">Macheteo es para estudiar: respetá las reglas de tu cátedra. Los machetes se arman con IA y pueden tener errores. · {UBICACION}</p>
     </footer>
   );
 }

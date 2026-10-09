@@ -65,7 +65,7 @@ export function LandingNav() {
             <div className="mt-2 flex justify-center gap-4 text-xs underline">
               <Link href="/terminos">Términos y condiciones</Link>
               <Link href="/privacidad">Privacidad</Link>
-              {CONTACTO_EMAIL && <a href={`mailto:${CONTACTO_EMAIL}`} aria-label={`Contacto: escribinos a ${CONTACTO_EMAIL}`}>Contacto</a>}
+              <a href={`mailto:${CONTACTO_EMAIL}`} aria-label={`Contacto: escribinos a ${CONTACTO_EMAIL}`}>Contacto</a>
             </div>
           </div>
         </div>

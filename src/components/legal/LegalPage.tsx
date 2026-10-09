@@ -1,6 +1,21 @@
+import { CONTACTO_EMAIL, UBICACION } from "@/lib/config";
+
 export const VERSION_LEGAL = "2026-10 (borrador)";
 
-export function LegalPage({ titulo, secciones }: { titulo: string; secciones: { titulo: string; texto: string }[] }) {
+/** Sección "Contacto": email + ubicación. */
+export function contactoLegal(motivo: string) {
+  return {
+    titulo: "Contacto",
+    final: true,
+    texto: (
+      <>
+        {motivo} escribinos a <a href={`mailto:${CONTACTO_EMAIL}`} className="link-garabato">{CONTACTO_EMAIL}</a>. Macheteo funciona desde {UBICACION}.
+      </>
+    ),
+  };
+}
+
+export function LegalPage({ titulo, secciones }: { titulo: string; secciones: { titulo: string; texto: React.ReactNode; final?: boolean }[] }) {
   return (
     <article className="rounded-lg border-[1.5px] border-borde bg-hoja p-6 shadow-sm">
       <div role="note" className="mb-6 rounded-lg border-2 border-dashed border-noche bg-celeste p-4 text-sm font-semibold text-noche">
@@ -12,7 +27,7 @@ export function LegalPage({ titulo, secciones }: { titulo: string; secciones: { 
         <section key={s.titulo} className="mt-6">
           <h2 className="text-xl">{i + 1}. {s.titulo}</h2>
           <p className="mt-2 text-noche">
-            <span className="mr-1 rounded bg-celeste px-1.5 py-0.5 text-xs font-semibold text-noche">PROVISORIO</span>
+            {!s.final && <span className="mr-1 rounded bg-celeste px-1.5 py-0.5 text-xs font-semibold text-noche">PROVISORIO</span>}
             {s.texto}
           </p>
         </section>

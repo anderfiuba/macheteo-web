@@ -29,8 +29,8 @@ function LineaAlias() {
       </span>
       {DONACION.titular && <span className="mt-1.5 block text-[12.5px]">Titular: {DONACION.titular}</span>}
       <span className="mt-1.5 block text-[11.5px] leading-snug text-gastado">
-        Donar es voluntario: no es una compra y no te da beneficios. Solo pueden donar mayores de 18.
-        {CONTACTO_EMAIL && ` Si te equivocaste de monto, escribinos a ${CONTACTO_EMAIL} dentro de los 30 días.`}
+        Donar es voluntario: no es una compra y no te da beneficios. Solo pueden donar mayores de 18. Si te equivocaste de monto, escribinos a{" "}
+        <a href={`mailto:${CONTACTO_EMAIL}`} className="underline">{CONTACTO_EMAIL}</a> dentro de los 30 días.
       </span>
     </>
   );

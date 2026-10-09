@@ -1,4 +1,4 @@
-import { LegalPage } from "@/components/legal/LegalPage";
+import { LegalPage, contactoLegal } from "@/components/legal/LegalPage";
 
 export const metadata = { title: "Términos y Condiciones · Macheteo", alternates: { canonical: "/terminos" }, openGraph: { url: "/terminos" } };
 
@@ -12,7 +12,7 @@ export default function Page() {
         { titulo: "Límites de uso", texto: "Acá van los límites diarios para que el servicio gratis siga funcionando, y que pueden cambiar." },
         { titulo: "Donaciones voluntarias", texto: "Acá va que las donaciones son opcionales, no son una compra, no dan derechos extra, no se reintegran y van a la cuenta de Mercado Pago del titular." },
         { titulo: "Tu cuenta", texto: "Acá van tus responsabilidades como usuario y cómo podés eliminar tu cuenta." },
-        { titulo: "Contacto", texto: "Acá va cómo escribirnos." },
+        contactoLegal("Para consultas, reclamos o si te equivocaste de monto en una donación (dentro de los 30 días),"),
       ]}
     />
   );
