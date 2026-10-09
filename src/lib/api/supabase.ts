@@ -33,6 +33,7 @@ export const supabaseApi: MacheteoApi = {
       enCurso: Number(d.en_curso ?? 0), enCursoMax: Number(d.en_curso_limite ?? 1),
       proximoCupoAt: (d.proximo_cupo_at as string | null) ?? null,
       limiteGlobal: Boolean(d.limite_global_alcanzado),
+      limiteGlobalVueltaAt: (d.limite_global_vuelve_at as string | null) ?? null,
       emailVerificado: Boolean(d.email_verificado),
       erroresHoy: Number(d.errores_usuario_hoy ?? 0), erroresMax: Number(d.errores_usuario_limite ?? 3),
       bloqueadoHasta: (d.bloqueado_hasta as string | null) ?? null,

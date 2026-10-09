@@ -51,11 +51,21 @@ export function cuandoVuelve(iso: string | null) {
   return `${esHoy ? "Hoy" : "Mañana"} a las ${horaCorta(iso)}`;
 }
 
+/** LU-02: tope global de gasto (USD 10/día). Amable: no es culpa del usuario, vuelve 00:00 ART. */
+export function AvisoLimiteGlobal({ vueltaAt, className = "" }: { vueltaAt: string | null; className?: string }) {
+  return (
+    <div role="status" className={`${className} bg-celeste`}>
+      <p className="font-semibold">Hoy se armaron tantos machetes que Macheteo llegó a su límite del día.</p>
+      <p className="mt-0.5">Tus apuntes quedan guardados acá. {cuandoVuelve(vueltaAt)} podés volver a armar. ¡Gracias por la paciencia!</p>
+    </div>
+  );
+}
+
 /** Aviso de límites de uso (copy de LU-01/LU-02/N-19). Nunca condicionado a donar. */
 export function AvisoUso({ uso, enCurso, className = "" }: { uso: UsoDiario | null; enCurso?: MacheteEnCurso | null; className?: string }) {
   if (!uso) return null;
   const base = `rounded-lg px-4 py-3 text-sm ${className}`;
-  if (uso.limiteGlobal) return <p role="status" className={`${base} bg-celeste font-semibold`}>Hoy Macheteo llegó a su límite. Volvé mañana.</p>;
+  if (uso.limiteGlobal) return <AvisoLimiteGlobal vueltaAt={uso.limiteGlobalVueltaAt} className={base} />;
   if (uso.bloqueadoHasta) {
     return <p role="status" className={`${base} border border-tachon/40 text-tachon`}>Llegaste al máximo de intentos fallidos de hoy. Mañana podés volver a probar.</p>;
   }

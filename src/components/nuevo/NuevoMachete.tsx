@@ -147,7 +147,7 @@ export function NuevoMachete() {
         setEnviando(false);
         setError({ code: r.error, vuelve: r.vueltaAt, motivo: r.motivo });
         if (r.error === "limite_diario" || r.error === "limite_activos" || r.error === "limite_errores")
-          api.registrarEvento("limite_alcanzado", { tipo: r.error === "limite_activos" ? "simultaneos" : r.error === "limite_errores" ? "errores" : r.motivo ? `dia_${r.motivo}` : "dia" });
+          api.registrarEvento("limite_alcanzado", { tipo: r.error === "limite_activos" ? "simultaneos" : r.error === "limite_errores" ? "errores" : r.motivo && r.motivo !== "hojas" ? `dia_${r.motivo}` : "dia" });
         refrescar();
         return;
       }
@@ -162,12 +162,12 @@ export function NuevoMachete() {
   }
 
   const msgError: Record<ErrorCrear, string> = {
-    limite_diario: error?.motivo
+    limite_diario: error?.motivo === "ip" || error?.motivo === "ip_desconocida"
       ? "Desde esta conexión ya se armaron muchos machetes hoy. Probá más tarde o desde otra red."
       : `Llegaste al límite de hoy. ${cuandoVuelve(error?.vuelve ?? null)} podés armar otro.`,
     limite_activos: "Ya tenés un machete armándose. Esperá que termine para armar otro.",
     limite_errores: "Llegaste al máximo de intentos fallidos de hoy. Mañana podés volver a probar.",
-    limite_global: "Hoy Macheteo llegó a su límite. Volvé mañana.",
+    limite_global: `Hoy se armaron tantos machetes que Macheteo llegó a su límite del día. ${cuandoVuelve(error?.vuelve ?? null)} podés volver a armar; tus apuntes quedan guardados.`,
     email_no_verificado: "Verificá tu email para armar tu machete. Te mandamos el link cuando te registraste.",
     terminos_no_aceptados: "Para armar tu machete tenés que aceptar los Términos y la Política de Privacidad.",
     cuenta_inexistente: "Tu cuenta ya no existe. Cerrá sesión y volvé a registrarte.",

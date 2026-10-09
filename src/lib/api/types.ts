@@ -5,13 +5,14 @@ import type { Hoja, Largo, Tinta, TipoResumen } from "@/lib/catalog";
 /** RPC obtener_uso() · LU-01 / LU-02 / N-03 */
 export interface UsoDiario {
   machetesUsados: number;  // machetes_hoy
-  machetesMax: number;     // machetes_limite
+  machetesMax: number;     // machetes_limite: 0 = sin tope (PA-16)
   hojasUsadas: number;     // hojas_hoy
-  hojasMax: number;        // hojas_limite
+  hojasMax: number;        // hojas_limite (16 por día calendario ART; cada machete cobra su largo)
   enCurso: number;         // en_curso
   enCursoMax: number;      // en_curso_limite (1)
   proximoCupoAt: string | null;   // solo si llegó al límite diario
-  limiteGlobal: boolean;          // limite_global_alcanzado
+  limiteGlobal: boolean;          // limite_global_alcanzado (tope global USD 10/día ART)
+  limiteGlobalVueltaAt: string | null; // limite_global_vuelve_at (00:00 ART siguiente)
   emailVerificado: boolean;
   erroresHoy: number;             // errores_usuario_hoy (N-03/N-19)
   erroresMax: number;             // errores_usuario_limite (3, confirmado)
@@ -54,7 +55,7 @@ export type ErrorCrear =
 
 export type CrearResumenResult =
   | { ok: true; resumenId: string }
-  | { ok: false; error: ErrorCrear; vueltaAt?: string | null; motivo?: "ip" | "ip_desconocida" | null };
+  | { ok: false; error: ErrorCrear; vueltaAt?: string | null; motivo?: "hojas" | "ip" | "ip_desconocida" | null };
 
 export type EstadoResumen = "en_cola" | "generando" | "armando" | "listo" | "error";
 
@@ -107,7 +108,7 @@ export interface MacheteoApi {
   crearResumen(input: CrearResumenInput): Promise<CrearResumenResult>;
   /** POST /api/machetes con reintentar_de: mismo pedido, nuevo job (errores de plataforma). */
   reintentarResumen(resumenId: string, idempotencyKey: string): Promise<CrearResumenResult>;
-  /** GET /api/machetes/[id]/pedido: apuntes y opciones de un machete propio en error (≤ 7 días). */
+  /** GET /api/machetes/[id]/pedido → RPC obtener_pedido_resumen(p_id): apuntes y opciones de un machete propio en error (≤ 7 días). */
   getPedido(resumenId: string): Promise<PedidoGuardado | null>;
   getEstadoResumen(id: string): Promise<EstadoResumenDTO | null>;
   /** Edge Function url_descarga_resumen → URL firmada 5 min. */

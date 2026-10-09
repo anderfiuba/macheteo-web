@@ -100,7 +100,7 @@ export function ResumenProgress({ id }: { id: string }) {
     }
     setAccion(null);
     if (res.error === "limite_activos") setErrAccion("Ya tenés un machete armándose. Esperá que termine para reintentar.");
-    else if (res.error === "limite_global") setErrAccion("Hoy Macheteo llegó a su límite. Volvé mañana.");
+    else if (res.error === "limite_global") setErrAccion("Hoy Macheteo llegó a su límite del día. Mañana desde las 00:00 podés reintentar.");
     else if (res.error === "limite_diario") setErrAccion("Llegaste al límite de hoy. Mañana podés volver a probar.");
     else if (res.error === "limite_errores") setErrAccion("Llegaste al máximo de intentos fallidos de hoy. Mañana podés volver a probar.");
     else setErrAccion("No pudimos reintentar. Probá de nuevo en unos minutos.");

@@ -3,6 +3,7 @@ import { hojasDe } from "@/lib/catalog";
 import type { CrearResumenInput, CrearResumenResult, EstadoResumenDTO, MacheteoApi, PedidoGuardado, Perfil, UsoDiario } from "./types";
 
 // Implementación simulada en localStorage, con la misma semántica que el contrato v2.
+// Probar LU-02: incluí "#global" en los apuntes (simula el tope global USD 10/día).
 // Probar N-19: incluí "#tope" (tope_costo), "#timeout" (render_timeout) o "#falla" (error de plataforma) en los apuntes.
 const KEY = "macheteo:mock:v3";
 // PM 2026-10-09: 16 hojas por día (cada machete descuenta su largo 2/4/8/16), 1 en curso, 3 errores propios/día. Sin tope de cantidad de machetes.
@@ -64,7 +65,7 @@ function calcularUso(s: MockState): UsoDiario {
     machetesUsados: recientes.length, machetesMax: Number.isFinite(LIM.machetes) ? LIM.machetes : 0, hojasUsadas: hojas, hojasMax: LIM.hojas,
     enCurso, enCursoMax: LIM.enCurso,
     proximoCupoAt: lleno && masViejo ? new Date(masViejo + DIA).toISOString() : null,
-    limiteGlobal: false, emailVerificado: true,
+    limiteGlobal: false, limiteGlobalVueltaAt: null, emailVerificado: true,
     erroresHoy: errores, erroresMax: LIM.errores, bloqueadoHasta: errores >= LIM.errores ? new Date(manana).toISOString() : null,
   };
 }
@@ -76,11 +77,14 @@ function armar(s: MockState, input: CrearResumenInput): CrearResumenResult {
   const m = input.opciones.materia.trim();
   if (input.apuntes.length < 300 || input.apuntes.length > 40000 || !m || m.length > 60) return { ok: false, error: "validacion" };
   const uso = calcularUso(s);
-  if (uso.limiteGlobal) return { ok: false, error: "limite_global" };
+  if (uso.limiteGlobal || input.apuntes.includes("#global")) {
+    const manana = new Date(new Date(`${hoyART()}T00:00:00-03:00`).getTime() + DIA).toISOString();
+    return { ok: false, error: "limite_global", vueltaAt: manana };
+  }
   if (uso.bloqueadoHasta) return { ok: false, error: "limite_errores", vueltaAt: uso.bloqueadoHasta };
   if (uso.enCurso >= uso.enCursoMax) return { ok: false, error: "limite_activos" };
   if ((uso.machetesMax > 0 && uso.machetesUsados >= uso.machetesMax) || uso.hojasUsadas + hojasDe(largoEfectivo(input)) > uso.hojasMax)
-    return { ok: false, error: "limite_diario", vueltaAt: uso.proximoCupoAt };
+    return { ok: false, error: "limite_diario", vueltaAt: uso.proximoCupoAt, motivo: "hojas" };
   const id = crypto.randomUUID();
   const largo = input.tipo === "machete" ? "machete" : input.largo;
   s.resumenes[id] = { id, input: { ...input, largo }, createdAt: Date.now() };

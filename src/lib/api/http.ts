@@ -13,7 +13,7 @@ async function postMachetes(body: Record<string, unknown>): Promise<CrearResumen
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-    const data = (await res.json().catch(() => ({}))) as { resumen_id?: string; error?: string; vuelve_at?: string | null; motivo?: "ip" | "ip_desconocida" | null };
+    const data = (await res.json().catch(() => ({}))) as { resumen_id?: string; error?: string; vuelve_at?: string | null; motivo?: "hojas" | "ip" | "ip_desconocida" | null };
     if (res.ok && data.resumen_id) return { ok: true, resumenId: data.resumen_id };
     const error = ERRORES.find((e) => e === data.error) ?? "desconocido";
     return { ok: false, error, vueltaAt: data.vuelve_at ?? null, motivo: data.motivo ?? null };
