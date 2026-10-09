@@ -130,7 +130,7 @@ export interface MacheteoApi {
   declararDonacion(monto?: number): Promise<DeclararDonacionResult>;
   /** RPC aceptar_terminos(p_version): para Google y cuentas sin aceptación (terminos_no_aceptados). */
   aceptarTerminos(): Promise<boolean>;
-  /** CU-06 · POST /api/cuenta/eliminar { confirmacion: "ELIMINAR" }. Borra todo y cierra las sesiones. */
+  /** CU-06 · Edge Function eliminar_cuenta { confirmar: "ELIMINAR" }. Borra todo y cierra todas las sesiones. */
   eliminarCuenta(confirmacion: string): Promise<EliminarCuentaResult>;
   /** RPC registrar_evento(p_nombre, p_props). Nunca tira error. */
   registrarEvento(nombre: EventoCliente, props?: Record<string, unknown>): Promise<void>;

@@ -1,5 +1,5 @@
 "use client";
-import type { CrearResumenInput, CrearResumenResult, EliminarCuentaResult, ErrorCrear, PedidoGuardado } from "./types";
+import type { CrearResumenInput, CrearResumenResult, ErrorCrear, PedidoGuardado } from "./types";
 
 const ERRORES: ErrorCrear[] = [
   "email_no_verificado", "terminos_no_aceptados", "validacion", "limite_errores", "limite_activos",
@@ -41,17 +41,3 @@ export async function pedidoViaRoute(resumenId: string): Promise<PedidoGuardado 
   }
 }
 
-export async function eliminarCuentaViaRoute(confirmacion: string): Promise<EliminarCuentaResult> {
-  try {
-    const res = await fetch("/api/cuenta/eliminar", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ confirmacion }),
-    });
-    if (res.ok) return { ok: true };
-    const { error } = (await res.json().catch(() => ({}))) as { error?: string };
-    return { ok: false, error: error === "confirmacion_invalida" || error === "no_autenticado" || error === "no_configurado" ? error : "error" };
-  } catch {
-    return { ok: false, error: "error" };
-  }
-}

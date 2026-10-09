@@ -1,7 +1,7 @@
 "use client";
 import { createClient } from "@/lib/supabase/client";
 import { VERSION_TERMINOS } from "@/lib/config";
-import { crearViaRoute, eliminarCuentaViaRoute, pedidoViaRoute, reintentarViaRoute } from "./http";
+import { crearViaRoute, pedidoViaRoute, reintentarViaRoute } from "./http";
 import type { EstadoResumenDTO, MacheteoApi, Perfil, UsoDiario } from "./types";
 
 /**
@@ -75,7 +75,22 @@ export const supabaseApi: MacheteoApi = {
     const { error } = await createClient().rpc("aceptar_terminos", { p_version: VERSION_TERMINOS });
     return !error;
   },
-  eliminarCuenta: eliminarCuentaViaRoute,
+  /** Edge Function eliminar_cuenta (contrato v4.2 delta 11): idempotente, actúa sobre el usuario de la sesión. */
+  async eliminarCuenta(confirmacion) {
+    const sb = createClient();
+    try {
+      const { error } = await sb.functions.invoke("eliminar_cuenta", { body: { confirmar: confirmacion.trim() } });
+      if (error) {
+        const status = (error as { context?: Response }).context?.status;
+        return { ok: false, error: status === 400 ? "confirmacion_invalida" : status === 401 ? "no_autenticado" : "error" };
+      }
+      // 200 { ok, ya_eliminada, pdfs_borrados }: las sesiones ya están revocadas server-side; limpiar la local.
+      await sb.auth.signOut({ scope: "local" }).catch(() => {});
+      return { ok: true };
+    } catch {
+      return { ok: false, error: "error" };
+    }
+  },
   reintentarResumen: reintentarViaRoute,
   getPedido: pedidoViaRoute,
   async getEstadoResumen(id) {
