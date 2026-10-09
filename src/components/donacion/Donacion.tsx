@@ -24,7 +24,7 @@ async function copiarTexto(texto: string) {
   }
 }
 
-export type Ubicacion = "perfil" | "bajo_boton" | "mientras_se_arma";
+export type Ubicacion = "perfil" | "bajo_boton" | "mientras_se_arma" | "machete_listo";
 const ev = api.registrarEvento;
 
 /** donacion_cta_visto una vez por montaje (plan-beta §9). */
@@ -163,15 +163,19 @@ export function DonacionSheet({ abierto, onCerrar, ubicacion }: { abierto: boole
 }
 
 /** DO-03 · "Es gratis. Si te sirve, podés donar lo que quieras." (o la variante "Mientras esperás"). */
-export function LineaDonar({ className = "", variante = "armar" }: { className?: string; variante?: "armar" | "esperando" }) {
+export function LineaDonar({ className = "", variante = "armar" }: { className?: string; variante?: "armar" | "esperando" | "listo" }) {
   const [abierto, setAbierto] = useState(false);
-  const ubicacion: Ubicacion = variante === "armar" ? "bajo_boton" : "mientras_se_arma";
+  const ubicacion: Ubicacion = variante === "armar" ? "bajo_boton" : variante === "listo" ? "machete_listo" : "mientras_se_arma";
   useCtaVisto(ubicacion);
   if (!DONACION_ACTIVA) return null;
   const link = <button type="button" onClick={() => setAbierto(true)} className="link-garabato">podés donar</button>;
   return (
     <>
-      {variante === "armar" ? (
+      {variante === "listo" ? (
+        <p className={`text-sm ${className}`}>
+          <span aria-hidden>☕︎ </span>¿Te sirvió? Macheteo es gratis y lo bancan quienes lo usan: {link} lo que quieras.
+        </p>
+      ) : variante === "armar" ? (
         <p className={`text-center text-sm text-gastado ${className}`}>
           <span aria-hidden>☕︎ </span>Es gratis. Si te sirve, {link} lo que quieras.
         </p>

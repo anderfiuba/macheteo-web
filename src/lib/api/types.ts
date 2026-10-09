@@ -101,6 +101,9 @@ export type EventoCliente =
 
 export type DeclararDonacionResult = { ok: true } | { ok: false; error: "ya_declarada_hoy" | "desconocido" };
 
+/** BI-01 · Item de la biblioteca. */
+export interface ResumenItem { id: string; estado: EstadoResumen; materia: string; tipo: TipoResumen; largo: Largo; paginas: number | null; createdAt: string }
+
 export interface MacheteoApi {
   getUso(): Promise<UsoDiario>;
   getEnCurso(): Promise<MacheteEnCurso | null>;
@@ -114,6 +117,8 @@ export interface MacheteoApi {
   /** GET /api/machetes/[id]/pedido → RPC obtener_pedido_resumen(p_id): apuntes y opciones de un machete propio en error (≤ 7 días). */
   getPedido(resumenId: string): Promise<PedidoGuardado | null>;
   getEstadoResumen(id: string): Promise<EstadoResumenDTO | null>;
+  /** BI-01 · Últimos machetes del usuario (select explícito en resumenes). */
+  listarResumenes(): Promise<ResumenItem[]>;
   /** Edge Function url_descarga_resumen → URL firmada 5 min. */
   getUrlDescarga(id: string): Promise<string | null>;
   /** RPC declarar_donacion(p_monto?) — máx. 1 por día. */

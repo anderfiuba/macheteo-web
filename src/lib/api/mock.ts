@@ -124,6 +124,13 @@ export const mockApi: MacheteoApi = {
     return { apuntes: i.apuntes, instrucciones: i.instrucciones ?? "", tipo: i.tipo, largo: i.largo, hoja: i.hoja, tinta: i.tinta, nombre: i.opciones.nombre_en_hojas, materia: i.opciones.materia, fecha: i.opciones.fecha };
   },
   async getEstadoResumen(id) { await delay(100); const r = load().resumenes[id]; return r ? estadoDe(r) : null; },
+  async listarResumenes() {
+    await delay(120);
+    return Object.values(load().resumenes).sort((a, b) => b.createdAt - a.createdAt).map((r) => {
+      const e = estadoDe(r);
+      return { id: e.id, estado: e.estado, materia: e.materia, tipo: e.tipo, largo: e.largo, paginas: e.paginas, createdAt: e.createdAt };
+    });
+  },
   async getUrlDescarga() { await delay(200); return null; },
   async declararDonacion() {
     await delay(300);

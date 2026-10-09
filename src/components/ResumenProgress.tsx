@@ -118,7 +118,7 @@ export function ResumenProgress({ id }: { id: string }) {
             <span aria-hidden className={`font-serif text-3xl text-birome ${enCurso ? "animate-spin [animation-duration:3s]" : ""}`}>{enCurso ? "@" : r.estado === "listo" ? "✓" : "!"}</span>
             <div>
               <p className="font-serif text-2xl text-birome">{r.materia || "Tu machete"}</p>
-              <p className="text-sm text-gastado">{largo ? `${largo.hojas} hojas` : ""}{tipo ? `, ${tipo}` : ""}</p>
+              <p className="text-sm text-gastado">{r.tipo === "machete" ? "1 hoja doble faz (hasta 2 páginas)" : largo ? `Hasta ${largo.hojas} hojas` : ""}{tipo ? ` · ${tipo}` : ""}</p>
             </div>
           </div>
           {largo && <span className="rounded-full bg-celeste px-3 py-1 text-xs font-semibold text-birome">{largo.nombre}</span>}
@@ -155,7 +155,7 @@ export function ResumenProgress({ id }: { id: string }) {
           )}
           {r.estado === "listo" && (
             <div className="rounded-lg bg-celeste px-4 py-3 text-sm">
-              <p className="font-semibold">✓ Tu machete está listo: {r.paginas} {r.paginas === 1 ? "hoja" : "hojas"}.</p>
+              <p className="font-semibold">✓ Tu machete está listo: {r.paginas} {r.paginas === 1 ? "página" : "páginas"}.</p>
               <button onClick={descargar} className="link-garabato mt-1">Descargar PDF</button>
             </div>
           )}
@@ -197,7 +197,7 @@ export function ResumenProgress({ id }: { id: string }) {
 
       {/* DO-03 / S18: mientras se arma, línea que abre la tarjeta "Bancá a Macheteo" (sheet/modal). Nunca bloquea. */}
       <div className="rounded-lg bg-celeste px-4 py-3">
-        <LineaDonar variante="esperando" />
+        <LineaDonar variante={r.estado === "listo" ? "listo" : "esperando"} />
       </div>
     </div>
   );

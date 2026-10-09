@@ -83,6 +83,16 @@ export const supabaseApi: MacheteoApi = {
       intentosRestantesHoy: data.intentos_restantes_hoy ?? null,
     } as EstadoResumenDTO;
   },
+  async listarResumenes() {
+    const { data, error } = await createClient()
+      .from("resumenes").select("id, estado, tipo, largo, extension, materia, paginas, created_at")
+      .order("created_at", { ascending: false }).limit(50);
+    if (error || !data) return [];
+    return data.map((d) => ({
+      id: d.id, estado: d.estado, tipo: d.tipo, largo: d.largo ?? d.extension, materia: d.materia ?? "",
+      paginas: d.paginas ?? null, createdAt: d.created_at,
+    }));
+  },
   async getUrlDescarga(id) {
     const { data, error } = await createClient().functions.invoke("url_descarga_resumen", { body: { p_resumen_id: id } });
     if (error || !data?.url) return null;
