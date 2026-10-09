@@ -77,6 +77,11 @@ export async function POST(req: NextRequest) {
   }
 
   if (rpc.error) {
+    // Clave de service role inválida / de otro proyecto (PostgREST 401 sin código SQL) → problema de configuración, no del usuario.
+    if (!rpc.error.code && /invalid api key|jwt/i.test(rpc.error.message)) {
+      console.error("[api/machetes] service role rechazada por Supabase (¿clave de otro proyecto?)");
+      return err("no_configurado", 503);
+    }
     const code = ERRORES.has(rpc.error.message) ? rpc.error.message : "desconocido";
     let detalle: Record<string, unknown> = {};
     try { detalle = rpc.error.details ? JSON.parse(rpc.error.details) : {}; } catch {}
