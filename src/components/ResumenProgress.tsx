@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { api, esErrorContenido, type EstadoResumen, type EstadoResumenDTO } from "@/lib/api";
+import { api, esErrorContenido, MSG_SERVICIO_NO_DISPONIBLE, SERVICIO_NO_DISPONIBLE, type EstadoResumen, type EstadoResumenDTO } from "@/lib/api";
 import { BORRADOR_KEY, pedidoABorrador } from "@/lib/borrador";
 import { LARGOS, TIPOS } from "@/lib/catalog";
 import { LineaDonar } from "@/components/donacion/Donacion";
@@ -104,6 +104,7 @@ export function ResumenProgress({ id }: { id: string }) {
     if (res.error === "limite_activos") setErrAccion("Ya tenés un machete armándose. Esperá que termine para reintentar.");
     else if (res.error === "limite_global") setErrAccion("Hoy Macheteo llegó a su límite del día. Mañana desde las 00:00 podés reintentar.");
     else if (res.error === "limite_diario") setErrAccion("Llegaste al límite de hoy. Mañana podés volver a probar.");
+    else if (res.error === "servicio_no_disponible") setErrAccion(MSG_SERVICIO_NO_DISPONIBLE);
     else if (res.error === "limite_errores") setErrAccion("Llegaste al máximo de intentos fallidos de hoy. Mañana podés volver a probar.");
     else setErrAccion("No pudimos reintentar. Probá de nuevo en unos minutos.");
   }
@@ -170,9 +171,15 @@ export function ResumenProgress({ id }: { id: string }) {
           )}
           {r.estado === "error" && !errContenido && (
             <div className="rounded-lg border border-tachon/40 px-4 py-3 text-sm">
-              <p className="font-semibold text-tachon">ⓘ No pudimos armar tu machete.</p>
-              <p>Algo falló de nuestro lado. Probá de nuevo en unos minutos.</p>
-              <p className="mt-1 text-xs text-gastado">No cuenta para tu límite de hoy.{r.errorCodigo ? ` Código para soporte: ${r.errorCodigo}.` : ""}</p>
+              {r.errorCodigo === SERVICIO_NO_DISPONIBLE ? (
+                <p className="font-semibold text-tachon">ⓘ {MSG_SERVICIO_NO_DISPONIBLE}</p>
+              ) : (
+                <>
+                  <p className="font-semibold text-tachon">ⓘ No pudimos armar tu machete.</p>
+                  <p>Algo falló de nuestro lado. Probá de nuevo en unos minutos.</p>
+                  <p className="mt-1 text-xs text-gastado">No cuenta para tu límite de hoy.{r.errorCodigo ? ` Código para soporte: ${r.errorCodigo}.` : ""}</p>
+                </>
+              )}
             </div>
           )}
         </div>

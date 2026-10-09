@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/Toast";
 import { EmptyState } from "@/components/EmptyState";
-import { api, type ResumenItem } from "@/lib/api";
+import { api, MSG_SERVICIO_NO_DISPONIBLE, SERVICIO_NO_DISPONIBLE, type ResumenItem } from "@/lib/api";
 import { TIPOS } from "@/lib/catalog";
 
 const ESTADO: Record<ResumenItem["estado"], string> = {
@@ -75,6 +75,9 @@ export function BibliotecaLista() {
                 <span className="text-sm text-gastado">
                   {tipo?.nombre ?? r.tipo} · {fecha(r.createdAt)}{r.estado === "listo" && r.paginas ? ` · ${r.paginas} ${r.paginas === 1 ? "página" : "páginas"}` : ""}
                 </span>
+                {r.estado === "error" && r.errorCodigo === SERVICIO_NO_DISPONIBLE && (
+                  <span className="mt-0.5 block text-sm text-tachon">{MSG_SERVICIO_NO_DISPONIBLE}</span>
+                )}
               </span>
               <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${r.estado === "listo" ? "bg-celeste text-birome" : r.estado === "error" ? "text-tachon" : "text-gastado"}`}>
                 {ESTADO[r.estado]}

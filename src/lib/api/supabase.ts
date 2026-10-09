@@ -106,12 +106,12 @@ export const supabaseApi: MacheteoApi = {
   },
   async listarResumenes() {
     const { data, error } = await createClient()
-      .from("resumenes").select("id, estado, tipo, largo, extension, materia, paginas, created_at")
+      .from("resumenes").select("id, estado, tipo, largo, extension, materia, paginas, error_codigo, created_at")
       .order("created_at", { ascending: false }).limit(50);
     if (error || !data) return [];
     return data.map((d) => ({
       id: d.id, estado: d.estado, tipo: d.tipo, largo: d.largo ?? d.extension, materia: d.materia ?? "",
-      paginas: d.paginas ?? null, createdAt: d.created_at,
+      paginas: d.paginas ?? null, createdAt: d.created_at, errorCodigo: d.error_codigo ?? null,
     }));
   },
   async getUrlDescarga(id) {

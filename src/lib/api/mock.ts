@@ -35,6 +35,7 @@ function codigoError(r: MockResumen): { codigo: string; origen: "usuario" | "pla
   if (a.includes("#timeout")) return { codigo: "render_timeout", origen: "usuario" };
   if (a.includes("#falla")) return { codigo: "worker_caido", origen: "plataforma" };
   if (a.includes("#excede")) return { codigo: "excede_hojas", origen: "plataforma" }; // N-20
+  if (a.includes("#sinservicio")) return { codigo: "servicio_no_disponible", origen: "plataforma" }; // v4.3 #12
   return null;
 }
 

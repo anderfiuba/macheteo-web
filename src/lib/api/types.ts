@@ -51,7 +51,11 @@ export interface CrearResumenInput {
 /** Errores exactos de crear_resumen / reintentar_resumen (+ los del route handler). */
 export type ErrorCrear =
   | "email_no_verificado" | "terminos_no_aceptados" | "validacion" | "limite_errores" | "limite_activos"
-  | "limite_diario" | "limite_global" | "cuenta_inexistente" | "no_autenticado" | "no_configurado" | "desconocido";
+  | "limite_diario" | "limite_global" | "cuenta_inexistente" | "no_autenticado" | "no_configurado" | "servicio_no_disponible" | "desconocido";
+
+/** Contrato v4.3 #12: el proveedor de IA no está disponible (sin saldo / clave rechazada). Plataforma: no descuenta hojas ni intentos. Copy de PM. */
+export const SERVICIO_NO_DISPONIBLE = "servicio_no_disponible";
+export const MSG_SERVICIO_NO_DISPONIBLE = "Macheteo no está generando ahora. Probá más tarde, no se descontó nada.";
 
 export type CrearResumenResult =
   | { ok: true; resumenId: string }
@@ -80,7 +84,7 @@ export interface EstadoResumenDTO {
 export const ERRORES_CONTENIDO = ["tope_costo", "render_timeout", "timeout_duracion"] as const;
 /** error_origen manda (lo decide el backend, que es quien cuenta el intento); la lista de códigos es solo el fallback si viene vacío. */
 export const esErrorContenido = (r: Pick<EstadoResumenDTO, "errorCodigo" | "errorOrigen">) =>
-  r.errorOrigen
+  r.errorCodigo === SERVICIO_NO_DISPONIBLE ? false : r.errorOrigen
     ? r.errorOrigen === "usuario"
     : !!r.errorCodigo && (ERRORES_CONTENIDO as readonly string[]).includes(r.errorCodigo);
 
@@ -105,7 +109,7 @@ export type EventoCliente =
 export type DeclararDonacionResult = { ok: true } | { ok: false; error: "ya_declarada_hoy" | "desconocido" };
 
 /** BI-01 · Item de la biblioteca. */
-export interface ResumenItem { id: string; estado: EstadoResumen; materia: string; tipo: TipoResumen; largo: Largo; paginas: number | null; createdAt: string }
+export interface ResumenItem { id: string; estado: EstadoResumen; materia: string; tipo: TipoResumen; largo: Largo; paginas: number | null; createdAt: string; errorCodigo?: string | null }
 
 export type EliminarCuentaResult = { ok: true } | { ok: false; error: "confirmacion_invalida" | "no_autenticado" | "no_configurado" | "error" };
 

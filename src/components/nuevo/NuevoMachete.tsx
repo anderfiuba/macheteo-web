@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { CheckTerminos } from "@/components/auth/AceptarTerminos";
-import { api, type ErrorCrear } from "@/lib/api";
+import { api, MSG_SERVICIO_NO_DISPONIBLE, type ErrorCrear } from "@/lib/api";
 import { BORRADOR_KEY, guardarPedido, limpiarBorrador } from "@/lib/borrador";
 import {
   HOJAS, LARGOS, LIMITES, MACHETE_1_HOJA, TINTAS, TIPOS, fechaCorta, formatNumero, hojasDe, paginasDeGuia,
@@ -174,6 +174,7 @@ export function NuevoMachete() {
     cuenta_inexistente: "Tu cuenta ya no existe. Cerrá sesión y volvé a registrarte.",
     no_autenticado: "Tu sesión venció. Volvé a entrar: tu texto queda guardado acá.",
     validacion: "Revisá el formulario: algo no pasó la validación.",
+    servicio_no_disponible: MSG_SERVICIO_NO_DISPONIBLE,
     no_configurado: "Armar machetes no está disponible en este momento. Tu texto queda guardado; probá más tarde.",
     desconocido: "No pudimos arrancar tu machete. Revisá tu conexión y probá de nuevo.",
   };

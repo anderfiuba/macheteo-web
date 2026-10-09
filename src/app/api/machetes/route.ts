@@ -15,11 +15,11 @@ export const dynamic = "force-dynamic";
  */
 const ERRORES = new Set([
   "cuenta_inexistente", "email_no_verificado", "terminos_no_aceptados", "validacion",
-  "limite_global", "limite_activos", "limite_diario", "limite_errores",
+  "limite_global", "limite_activos", "limite_diario", "limite_errores", "servicio_no_disponible",
 ]);
 const STATUS: Record<string, number> = {
   validacion: 400, email_no_verificado: 403, terminos_no_aceptados: 403, cuenta_inexistente: 403,
-  limite_activos: 429, limite_diario: 429, limite_errores: 429, limite_global: 503,
+  limite_activos: 429, limite_diario: 429, limite_errores: 429, limite_global: 503, servicio_no_disponible: 503,
 };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ENUMS = {
