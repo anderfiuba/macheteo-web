@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AvisoBaja } from "@/components/EliminarCuenta";
 import { BotonFijo } from "@/components/landing/BotonFijo";
 import { FooterLegal } from "@/components/landing/FooterLegal";
 import { HojaHero } from "@/components/landing/HojaHero";
@@ -17,6 +18,7 @@ const ARMAR = "/registro"; // S01; con sesión nunca se llega acá (middleware �
 export default function Landing() {
   return (
     <>
+      <AvisoBaja />
       <div id="hero" className="bg-birome text-white">
         <LandingNav />
         <main className="mx-auto grid max-w-[1180px] gap-10 px-5 pb-0 pt-3 lg:grid-cols-[1.05fr_1fr] lg:px-16 lg:pb-[70px] lg:pt-2.5">

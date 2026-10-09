@@ -132,6 +132,12 @@ export const mockApi: MacheteoApi = {
     });
   },
   async getUrlDescarga() { await delay(200); return null; },
+  async eliminarCuenta(confirmacion) {
+    await delay(600);
+    if (confirmacion.trim() !== "ELIMINAR") return { ok: false, error: "confirmacion_invalida" };
+    Object.keys(localStorage).filter((k) => k.startsWith("macheteo")).forEach((k) => localStorage.removeItem(k));
+    return { ok: true };
+  },
   async declararDonacion() {
     await delay(300);
     const s = load();

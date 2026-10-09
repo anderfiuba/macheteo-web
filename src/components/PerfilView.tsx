@@ -5,6 +5,7 @@ import { api, type Perfil } from "@/lib/api";
 import { HOJAS, LIMITES, TINTAS, type Hoja, type Tinta } from "@/lib/catalog";
 import { cerrarSesion } from "@/lib/sesion";
 import { FilaDonar } from "@/components/donacion/Donacion";
+import { EliminarCuenta } from "@/components/EliminarCuenta";
 import { useToast } from "@/components/Toast";
 import { AvisoUso, useUso } from "./UsoProvider";
 
@@ -92,7 +93,7 @@ export function PerfilView() {
 
       <div className="space-y-3">
         <button onClick={() => cerrarSesion(router)} className="link-garabato block">Cerrar sesión</button>
-        <button disabled title="Llega en la semana 3 (CU-06)" className="block text-sm text-tachon opacity-50">Eliminar cuenta</button>
+        <EliminarCuenta />
       </div>
     </div>
   );

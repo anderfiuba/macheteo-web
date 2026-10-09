@@ -1,6 +1,6 @@
 "use client";
 import { createClient } from "@/lib/supabase/client";
-import { crearViaRoute, pedidoViaRoute, reintentarViaRoute } from "./http";
+import { crearViaRoute, eliminarCuentaViaRoute, pedidoViaRoute, reintentarViaRoute } from "./http";
 import type { EstadoResumenDTO, MacheteoApi, Perfil, UsoDiario } from "./types";
 
 /**
@@ -70,6 +70,7 @@ export const supabaseApi: MacheteoApi = {
     return Array.isArray(data) ? (data as string[]) : [];
   },
   crearResumen: crearViaRoute,
+  eliminarCuenta: eliminarCuentaViaRoute,
   reintentarResumen: reintentarViaRoute,
   getPedido: pedidoViaRoute,
   async getEstadoResumen(id) {

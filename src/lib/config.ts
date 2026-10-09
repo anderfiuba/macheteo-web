@@ -34,3 +34,6 @@ export const CONTACTO_EMAIL = "andersonbrayner.dev@gmail.com";
 export const UBICACION = "Capital Federal, Argentina";
 /** Link obligatorio de Defensa del Consumidor (Res. SCI 274/2021 art. 8). */
 export const DEFENSA_CONSUMIDOR_URL = "https://www.argentina.gob.ar/produccion/defensadelconsumidor/formulario";
+
+/** CU-06 · Palabra que hay que escribir para eliminar la cuenta (se ignoran espacios al borde, mayúsculas exactas). */
+export const PALABRA_CONFIRMACION_BAJA = "ELIMINAR";

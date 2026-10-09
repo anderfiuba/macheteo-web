@@ -107,6 +107,8 @@ export type DeclararDonacionResult = { ok: true } | { ok: false; error: "ya_decl
 /** BI-01 · Item de la biblioteca. */
 export interface ResumenItem { id: string; estado: EstadoResumen; materia: string; tipo: TipoResumen; largo: Largo; paginas: number | null; createdAt: string }
 
+export type EliminarCuentaResult = { ok: true } | { ok: false; error: "confirmacion_invalida" | "no_autenticado" | "no_configurado" | "error" };
+
 export interface MacheteoApi {
   getUso(): Promise<UsoDiario>;
   getEnCurso(): Promise<MacheteEnCurso | null>;
@@ -126,6 +128,8 @@ export interface MacheteoApi {
   getUrlDescarga(id: string): Promise<string | null>;
   /** RPC declarar_donacion(p_monto?) — máx. 1 por día. */
   declararDonacion(monto?: number): Promise<DeclararDonacionResult>;
+  /** CU-06 · POST /api/cuenta/eliminar { confirmacion: "ELIMINAR" }. Borra todo y cierra las sesiones. */
+  eliminarCuenta(confirmacion: string): Promise<EliminarCuentaResult>;
   /** RPC registrar_evento(p_nombre, p_props). Nunca tira error. */
   registrarEvento(nombre: EventoCliente, props?: Record<string, unknown>): Promise<void>;
 }
